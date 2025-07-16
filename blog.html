@@ -56,7 +56,8 @@
 
         async function loadArticles() {
             try {
-                const { data, error } = await supabase
+                // CORREÇÃO: Usando a nova variável 'sbClient'
+                const { data, error } = await sbClient
                     .from('artigos')
                     .select('*')
                     .order('created_at', { ascending: false });
