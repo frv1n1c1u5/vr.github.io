@@ -34,7 +34,6 @@
             <div class="container">
                 <h2>Blog de Investimentos</h2>
                 <p class="blog-intro">Um espaço para compartilhar análises, estratégias e reflexões sobre o dinâmico mundo dos investimentos. Acompanhe para se manter atualizado e tomar decisões mais inteligentes.</p>
-
                 <div class="blog-articles-list" id="articles-container">
                     <p>Carregando artigos...</p>
                 </div>
@@ -53,26 +52,18 @@
 
     <script>
         const articlesContainer = document.getElementById('articles-container');
-
         async function loadArticles() {
             try {
-                // CORREÇÃO: Usando a nova variável 'sbClient'
                 const { data, error } = await sbClient
                     .from('artigos')
                     .select('*')
                     .order('created_at', { ascending: false });
-
-                if (error) {
-                    throw error;
-                }
-
+                if (error) { throw error; }
                 if (data.length === 0) {
                      articlesContainer.innerHTML = '<p>Nenhum artigo encontrado.</p>';
                      return;
                 }
-
                 articlesContainer.innerHTML = '';
-
                 data.forEach(article => {
                     const articleElement = document.createElement('article');
                     articleElement.className = 'blog-article';
