@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicadores Macroeconômicos | Vinicius Rocha</title>
+    <meta name="description" content="Acompanhe em tempo real os principais indicadores macroeconômicos do Brasil: SELIC, IPCA, IGP-M, Dólar, Ibovespa e mais.">
+    <link rel="icon" href="/vr.github.io/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/vr.github.io/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="sticky-header">
+        <div class="container">
+            <a href="index.html" class="logo">Vinicius Rocha</a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="sobre.html">Sobre Mim</a></li>
+                    <li><a href="assessores.html">Para Assessores</a></li>
+                    <li><a href="clientes.html">Para Clientes</a></li>
+                    <li><a href="indicadores.html" class="active">Indicadores</a></li>
+                    <li><a href="blog.html">Blog</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                    <li class="menu-button"><a href="https://wa.me/5551999381379?text=Ol%C3%A1%20Vinicius%2C%20vi%20seu%20site%20e%20gostaria%20de%20saber%20mais" target="_blank">Fale Comigo</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="content-page">
+            <div class="container">
+                <h2>Indicadores Macroeconômicos</h2>
+                <p class="page-intro">Dados essenciais para entender o cenário econômico atual e tomar decisões de investimento mais informadas. Os valores são atualizados automaticamente.</p>
+                
+                <div class="indicators-page-grid" id="indicators-container">
+                    <div class="indicator-card-large">
+                        <h3>Inflação (IPCA)</h3>
+                        <div class="indicator-item">
+                            <span>Acumulado no ano</span>
+                            <strong id="ipca-ano">Carregando...</strong>
+                        </div>
+                        <div class="indicator-item">
+                            <span>Acumulado 12 meses</span>
+                            <strong id="ipca-12m">Carregando...</strong>
+                        </div>
+                        <small>Fonte: IBGE / BCB</small>
+                    </div>
+                    <div class="indicator-card-large">
+                        <h3>Taxa Selic</h3>
+                        <div class="indicator-item">
+                            <span>Acumulada no ano</span>
+                            <strong id="selic-ano">Carregando...</strong>
+                        </div>
+                        <div class="indicator-item">
+                            <span>Acumulada 12 meses</span>
+                            <strong id="selic-12m">Carregando...</strong>
+                        </div>
+                        <small>Fonte: Banco Central</small>
+                    </div>
+                    <div class="indicator-card-large">
+                        <h3>IGP-M</h3>
+                        <div class="indicator-item">
+                            <span>Acumulado no ano</span>
+                            <strong id="igpm-ano">Carregando...</strong>
+                        </div>
+                        <div class="indicator-item">
+                            <span>Acumulado 12 meses</span>
+                            <strong id="igpm-12m">Carregando...</strong>
+                        </div>
+                        <small>Fonte: FGV / BCB</small>
+                    </div>
+                    <div class="indicator-card-large">
+                        <h3>Dólar (PTAX Venda)</h3>
+                        <div class="indicator-item">
+                            <span>Cotação Atual</span>
+                            <strong id="dolar-atual">Carregando...</strong>
+                        </div>
+                        <div class="indicator-item">
+                            <span>Variação (Dia)</span>
+                            <strong id="dolar-dia">Carregando...</strong>
+                        </div>
+                        <div class="indicator-item">
+                            <span>Mínima / Máxima (12M)</span>
+                            <strong id="dolar-min-max-12m">Carregando...</strong>
+                        </div>
+                        <small>Fonte: BCB / Brapi</small>
+                    </div>
+                     <div class="indicator-card-large">
+                        <h3>Ibovespa</h3>
+                        <div class="indicator-item">
+                            <span>Pontuação</span>
+                            <strong id="ibov-pontos">Carregando...</strong>
+                        </div>
+                        <div class="indicator-item">
+                            <span>Variação (Dia)</span>
+                            <strong id="ibov-dia">Carregando...</strong>
+                        </div>
+                         <div class="indicator-item">
+                            <span>Variação no Ano</span>
+                            <strong id="ibov-ano">Carregando...</strong>
+                        </div>
+                        <div class="indicator-item">
+                            <span>Variação 12 meses</span>
+                            <strong id="ibov-12m">Carregando...</strong>
+                        </div>
+                        <small>Fonte: B3 / Brapi</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="sticky-header">
+        <div class="container">
+            <p>&copy; 2025 Vinicius Rocha | Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
