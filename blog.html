@@ -55,7 +55,7 @@
         async function loadArticles() {
             try {
                 const { data, error } = await sbClient
-                    .from('artigos')
+                    .from('posts') // <-- MUDANÇA AQUI
                     .select('*')
                     .order('created_at', { ascending: false });
                 if (error) { throw error; }
