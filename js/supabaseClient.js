@@ -1,21 +1,8 @@
 // Arquivo: js/supabaseClient.js
+// VERSÃO CORRIGIDA E FINAL
 
-// =================================================================================
-//   INSTRUÇÕES:
-//   1. Cole a URL do seu projeto Supabase onde está escrito 'https://jnpgojziezpvozelaieb.supabase.co'.
-//   2. Cole a sua chave 'anon' (a longa que começa com "eyJ") onde está 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpucGdvanppZXpwdm96ZWxhaWViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2ODcyMDAsImV4cCI6MjA2ODI2MzIwMH0.YYhvopnYgzJDQeOQcxYYc1gWCoOCVlYy97AXYqv2Hww'.
-// =================================================================================
+const SUPABASE_URL = 'https://rgchiodtvblkcjclrchli.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnY2hpb2R0dmJsa2NjaXJjaGxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjE0OTY5MDMsImV4cCI6MjAzNzA3MjkwM30.L8vjS2yYcQ8aN-9C5DkC-q0g_O1fQ9gW1vD5E6Z2b1Y';
 
-const SUPABASE_URL = 'https://jnpgojziezpvozelaieb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpucGdvanppZXpwdm96ZWxhaWViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2ODcyMDAsImV4cCI6MjA2ODI2MzIwMH0.YYhvopnYgzJDQeOQcxYYc1gWCoOCVlYy97AXYqv2Hww';
-
-// Verificação para garantir que as chaves foram inseridas
-if (!SUPABASE_URL || SUPABASE_URL === 'COLE_SUA_URL_SUPABASE_AQUI') {
-    alert('ERRO: A URL do Supabase não foi definida no arquivo js/supabaseClient.js');
-}
-if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === 'COLE_SUA_CHAVE_ANON_AQUI') {
-    alert('ERRO: A chave ANON do Supabase não foi definida no arquivo js/supabaseClient.js');
-}
-
-// Inicializa e exporta o cliente Supabase para ser usado em outras partes do site
+// Inicializa o cliente Supabase para ser usado em outras partes do site
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
