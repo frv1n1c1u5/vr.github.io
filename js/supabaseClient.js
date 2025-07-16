@@ -6,8 +6,8 @@
 //   2. Cole a sua chave 'anon' (a longa que começa com "eyJ") onde está 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpucGdvanppZXpwdm96ZWxhaWViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2ODcyMDAsImV4cCI6MjA2ODI2MzIwMH0.YYhvopnYgzJDQeOQcxYYc1gWCoOCVlYy97AXYqv2Hww'.
 // =================================================================================
 
-const SUPABASE_URL = 'COLE_SUA_URL_SUPABASE_AQUI';
-const SUPABASE_ANON_KEY = 'COLE_SUA_CHAVE_ANON_AQUI';
+const SUPABASE_URL = 'https://jnpgojziezpvozelaieb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpucGdvanppZXpwdm96ZWxhaWViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2ODcyMDAsImV4cCI6MjA2ODI2MzIwMH0.YYhvopnYgzJDQeOQcxYYc1gWCoOCVlYy97AXYqv2Hww';
 
 // Verificação para garantir que as chaves foram inseridas
 if (!SUPABASE_URL || SUPABASE_URL === 'COLE_SUA_URL_SUPABASE_AQUI') {
