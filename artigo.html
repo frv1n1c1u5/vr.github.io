@@ -49,27 +49,21 @@
         const articleContainer = document.getElementById('article-content-container');
         const urlParams = new URLSearchParams(window.location.search);
         const articleSlug = urlParams.get('slug');
-
         async function loadSingleArticle() {
             if (!articleSlug) {
                 articleContainer.innerHTML = '<h1>Artigo não encontrado.</h1><p>Parece que o link que você seguiu está quebrado ou incompleto.</p>';
                 return;
             }
-
             try {
-                // CORREÇÃO: Usando a nova variável 'sbClient'
                 const { data, error } = await sbClient
                     .from('artigos')
                     .select('*')
                     .eq('slug', articleSlug)
                     .single();
-
                 if (error || !data) {
                     throw error || new Error('Artigo não encontrado no banco de dados.');
                 }
-                
                 document.title = `${data.title} | Blog Vinicius Rocha`;
-
                 articleContainer.innerHTML = `
                     <h1>${data.title}</h1>
                     <p class="article-meta">Publicado em ${new Date(data.created_at).toLocaleDateString('pt-BR')}</p>
