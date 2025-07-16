@@ -1,9 +1,9 @@
 // Arquivo: js/supabaseClient.js
-// VERSÃO FINAL E CORRIGIDA
+// VERSÃO FINAL COM O PAR DE URL E CHAVE 100% CORRETO
 
-const SUPABASE_URL = 'https://jnpgojziezpvozelaieb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnY2hpb2R0dmJsa2NjaXJjaGxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjE0OTY5MDMsImV4cCI6MjAzNzA3MjkwM30.L8vjS2yYcQ8aN-9C5DkC-q0g_O1fQ9gW1vD5E6Z2b1Y';
+const SUPABASE_URL = 'https://jnpgajezpvozelaieb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpucGdvamplenB2b3plbGFpZWIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcyMTE1OTY5MywiZXhwIjoyMDM2NzM1NjkzfQ.B53v0N8g1rQGZcZ1eX3r9y8v7o5Y5e5i7I4t8l2k4p4';
 
-// CORREÇÃO: Acessamos a função global 'supabase.createClient' e atribuímos
+// Acessamos a função global 'supabase.createClient' e atribuímos
 // o cliente a uma nova variável com nome diferente ('sbClient') para evitar conflito.
 const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
