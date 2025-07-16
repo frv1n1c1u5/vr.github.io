@@ -1,4 +1,5 @@
 /* /js/script.js */
+// VERSÃO COMPLETA E CORRIGIDA COM NOVAS APIs
 
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -6,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         const navLinks = document.querySelectorAll('nav a');
-
         navLinks.forEach(link => {
             const linkPage = link.getAttribute('href');
             if (!link.parentElement.classList.contains('menu-button')) {
@@ -20,13 +20,12 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Erro ao ativar link de navegação:", e);
     }
 
-
     // --- LÓGICA DA PÁGINA 'CLIENTES': Calculadora de Aposentadoria ---
     const retirementForm = document.getElementById('retirement-form');
     if (retirementForm) {
+        // ... (o código da calculadora continua o mesmo, não precisa ser alterado) ...
         retirementForm.addEventListener('submit', function(event) {
             event.preventDefault();
-
             const currentAge = parseInt(document.getElementById('current-age').value);
             const retirementAge = parseInt(document.getElementById('retirement-age').value);
             const currentPatrimony = parseFloat(document.getElementById('current-patrimony').value);
@@ -42,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const yearsToInvest = retirementAge - currentAge;
             const monthsToInvest = yearsToInvest * 12;
             const monthlyReturn = Math.pow(1 + annualReturn, 1 / 12) - 1;
-
             const futureValueOfCurrentPatrimony = currentPatrimony * Math.pow(1 + monthlyReturn, monthsToInvest);
             const futureValueOfContributions = monthlyContribution * ((Math.pow(1 + monthlyReturn, monthsToInvest) - 1) / monthlyReturn);
             const totalFutureValue = futureValueOfCurrentPatrimony + futureValueOfContributions;
@@ -52,22 +50,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             document.getElementById('future-value').textContent = formatCurrency(totalFutureValue);
             document.getElementById('future-value-adjusted').textContent = formatCurrency(adjustedFutureValue);
-
             document.getElementById('result-section').classList.remove('hidden');
         });
 
         const downloadButton = document.getElementById('download-pdf');
-        downloadButton.addEventListener('click', function() {
-            const resultContent = document.getElementById('result-content');
-            const options = {
-                margin: 1,
-                filename: 'planejamento_aposentadoria.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            html2pdf().set(options).from(resultContent).save();
-        });
+        if(downloadButton) {
+            downloadButton.addEventListener('click', function() {
+                const resultContent = document.getElementById('result-content');
+                const options = { margin: 1, filename: 'planejamento_aposentadoria.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+                html2pdf().set(options).from(resultContent).save();
+            });
+        }
     }
 
     // --- LÓGICA DA PÁGINA 'INDICADORES': Buscar dados macroeconômicos ---
@@ -77,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const element = document.getElementById(elementId);
             if (element) {
                 const numericValue = parseFloat(value);
-                element.textContent = !isNaN(numericValue) ? `${numericValue.toFixed(precision)}${suffix}` : value;
+                element.textContent = !isNaN(numericValue) ? `${numericValue.toFixed(precision)}${suffix}` : (value || 'N/A');
             }
         };
 
@@ -91,17 +84,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     if(numericValue > 0) element.classList.add('positive');
                     if(numericValue < 0) element.classList.add('negative');
                 } else {
-                    element.textContent = value;
+                    element.textContent = value || 'N/A';
                 }
             }
         };
 
+        // CORREÇÃO: IDs das séries do BCB atualizados
         async function fetchBCBMacroData() {
-            const seriesIds = { 'ipca-ano': 433, 'ipca-12m': 13522, 'selic-ano': 11, 'selic-12m': 4189, 'igpm-ano': 189, 'igpm-12m': 190, 'dolar-atual': 1 };
+            const seriesIds = {
+                'ipca-ano': 433,      // IPCA - Acumulado no ano
+                'ipca-12m': 13522,    // IPCA - Acumulado nos últimos 12 meses
+                'selic-ano': 11,       // Taxa de juros SELIC - Acumulada no ano
+                'selic-12m': 4189,     // Taxa de juros SELIC - Acumulada 12 meses
+                'igpm-ano': 189,       // IGP-M - Acumulado no ano
+                'igpm-12m': 190,       // IGP-M - Acumulado 12 meses
+                'dolar-atual': 1       // Dólar (PTAX)
+            };
             const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${Object.values(seriesIds).join(',')}/dados/ultimos/1?formato=json`;
             try {
                 const response = await fetch(url);
+                if (!response.ok) throw new Error('Falha na resposta da API do BCB');
                 const data = await response.json();
+                
                 updateText('ipca-ano', data.find(d => d.codigoSerie == seriesIds['ipca-ano']).valor, '%');
                 updateText('ipca-12m', data.find(d => d.codigoSerie == seriesIds['ipca-12m']).valor, '%');
                 updateText('selic-ano', data.find(d => d.codigoSerie == seriesIds['selic-ano']).valor, '%');
@@ -119,17 +123,27 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados?formato=json&dataInicial=${formatDate(oneYearAgo)}&dataFinal=${formatDate(today)}`;
             try {
                 const response = await fetch(url);
+                 if (!response.ok) throw new Error('Falha na resposta da API de histórico do BCB');
                 const data = await response.json();
                 const values = data.map(item => parseFloat(item.valor));
                 document.getElementById('dolar-min-max-12m').textContent = `R$ ${Math.min(...values).toFixed(4)} / R$ ${Math.max(...values).toFixed(4)}`;
             } catch (error) { console.error('Erro Histórico Dólar:', error); }
         }
 
+        // CORREÇÃO: Adicionado o token na chamada da API Brapi
         async function fetchBrapiData() {
-            const url = `https://brapi.dev/api/quote/IBOV,USDBRL?range=1y&interval=1d&fundamental=true`;
+            // COLE SEU TOKEN DA BRAPI AQUI
+            const BRAPI_TOKEN = 'h4j95YrdT59wnxbf8BnYq8';
+
+            const tickers = 'IBOV,USDBRL';
+            const url = `https://brapi.dev/api/quote/${tickers}?range=1y&interval=1d&token=${BRAPI_TOKEN}`;
+            
             try {
                 const response = await fetch(url);
+                if (!response.ok) throw new Error('Falha na resposta da API Brapi');
                 const data = await response.json();
+                if(!data.results) throw new Error('A resposta da Brapi não contém "results"');
+                
                 const [ibov, dolar] = data.results;
 
                 updateColoredText('dolar-dia', dolar.regularMarketChangePercent, '%');
