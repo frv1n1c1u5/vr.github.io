@@ -57,20 +57,19 @@
             }
 
             try {
-                const { data, error } = await supabase
+                // CORREÇÃO: Usando a nova variável 'sbClient'
+                const { data, error } = await sbClient
                     .from('artigos')
                     .select('*')
                     .eq('slug', articleSlug)
-                    .single(); // .single() garante que estamos pegando apenas um resultado
+                    .single();
 
                 if (error || !data) {
                     throw error || new Error('Artigo não encontrado no banco de dados.');
                 }
                 
-                // Atualiza o título da aba do navegador com o título do artigo
                 document.title = `${data.title} | Blog Vinicius Rocha`;
 
-                // Insere o título e o conteúdo do artigo na página
                 articleContainer.innerHTML = `
                     <h1>${data.title}</h1>
                     <p class="article-meta">Publicado em ${new Date(data.created_at).toLocaleDateString('pt-BR')}</p>
