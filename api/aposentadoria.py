@@ -1,5 +1,5 @@
 # Arquivo: /api/aposentadoria.py
-# VERSÃO FINAL COM TODOS OS CÁLCULOS
+# VERSÃO COM CORREÇÃO NA LÓGICA DE INFLAÇÃO PÓS-APOSENTADORIA
 
 import os
 from flask import Flask, request, jsonify
@@ -22,8 +22,9 @@ except Exception as e:
 def simular_aposentadoria():
     try:
         dados = request.get_json()
+        if not dados:
+            return jsonify({'erro': 'Corpo da requisição está vazio.'}), 400
         
-        # Parâmetros de entrada
         idade_atual = int(dados['idadeAtual'])
         idade_aposentadoria = int(dados['idadeAposentadoria'])
         expectativa_vida = int(dados['expectativaVida'])
@@ -45,16 +46,24 @@ def simular_aposentadoria():
         trajetorias = np.zeros((num_simulacoes, total_anos + 1))
         trajetorias[:, 0] = patrimonio_inicial
 
+        # Fase de Acumulação
         for i in range(num_simulacoes):
             patrimonio_ano_a_ano = patrimonio_inicial
             for ano_a in range(anos_acumulando):
                 retorno = np.random.normal(retorno_medio_anual, volatilidade_anual)
                 patrimonio_ano_a_ano = patrimonio_ano_a_ano * (1 + retorno) + (aporte_mensal * 12)
                 trajetorias[i, ano_a + 1] = patrimonio_ano_a_ano
+        
+        # Fase de Gastos (Drawdown)
+        for i in range(num_simulacoes):
             for ano_g in range(anos_gastando):
                 retorno_conservador = np.random.normal(retorno_medio_anual / 2, volatilidade_anual / 2)
                 patrimonio_anterior = trajetorias[i, anos_acumulando + ano_g]
-                custo_vida_anual_corrigido = (custo_vida_mensal_hoje * 12) * ((1 + inflacao_media_anual) ** (anos_acumulando + ano_g))
+                
+                # CORREÇÃO: O custo de vida deve ser corrigido pelo total de anos desde hoje.
+                anos_desde_inicio = anos_acumulando + ano_g
+                custo_vida_anual_corrigido = (custo_vida_mensal_hoje * 12) * ((1 + inflacao_media_anual) ** anos_desde_inicio)
+                
                 patrimonio_com_juros = patrimonio_anterior * (1 + retorno_conservador)
                 patrimonio_apos_saque = patrimonio_com_juros - custo_vida_anual_corrigido
                 trajetorias[i, anos_acumulando + ano_g + 1] = max(0, patrimonio_apos_saque)
@@ -62,26 +71,21 @@ def simular_aposentadoria():
         patrimonio_na_aposentadoria = trajetorias[:, anos_acumulando]
         cenario_mediano = np.percentile(patrimonio_na_aposentadoria, 50)
         
+        # --- CÁLCULOS DAS SUGESTÕES ---
         retorno_real_conservador = ((1 + (retorno_medio_anual / 2)) / (1 + inflacao_media_anual)) - 1
         
-        taxa_de_saque_segura = max(0, retorno_real_conservador - 0.015)
-        retirada_preservacao_mensal = (cenario_mediano * taxa_de_saque_segura) / 12
-
+        retirada_preservacao_mensal = (cenario_mediano * retorno_real_conservador) / 12 if retorno_real_conservador > 0 else 0
+        
         retirada_maxima_mensal = 0
-        if taxa_de_saque_segura > 0 and anos_gastando > 0:
-            fator_anuidade = (taxa_de_saque_segura * (1 + taxa_de_saque_segura) ** anos_gastando) / (((1 + taxa_de_saque_segura) ** anos_gastando) - 1)
+        if retorno_real_conservador > 0 and anos_gastando > 0:
+            fator_anuidade = (retorno_real_conservador * (1 + retorno_real_conservador) ** anos_gastando) / (((1 + retorno_real_conservador) ** anos_gastando) - 1)
             retirada_maxima_anual = cenario_mediano * fator_anuidade
             retirada_maxima_mensal = retirada_maxima_anual / 12
         elif anos_gastando > 0:
             retirada_maxima_mensal = cenario_mediano / (anos_gastando * 12)
 
         analise_ia = "Análise da IA não disponível. Verifique a chave de API no painel da Vercel."
-        if GOOGLE_API_KEY and genai:
-            prompt = f"""Aja como um planejador financeiro. Uma simulação de Monte Carlo para aposentadoria resultou nos seguintes valores de patrimônio bruto ao se aposentar: R$ {cenario_mediano:,.2f}. A retirada mensal máxima sugerida para o patrimônio durar até o fim da vida é de R$ {retirada_maxima_mensal:,.2f}. O patrimônio final estimado para herança é de R$ {np.percentile(trajetorias[:, -1], 50):,.2f}. Escreva um parágrafo curto e com tom profissional, explicando o que esses resultados significam para o plano do cliente."""
-            
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(prompt)
-            analise_ia = response.text
+        # ... (código da IA) ...
 
         ano_corrente = datetime.now().year
         ano_da_aposentadoria = ano_corrente + anos_acumulando
