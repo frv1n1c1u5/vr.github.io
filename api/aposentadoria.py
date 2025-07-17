@@ -21,6 +21,8 @@ except Exception as e:
 def simular_aposentadoria():
     try:
         dados = request.get_json()
+        if not dados:
+            return jsonify({'erro': 'Corpo da requisição está vazio.'}), 400
         
         idade_atual = int(dados['idadeAtual'])
         idade_aposentadoria = int(dados['idadeAposentadoria'])
@@ -71,7 +73,15 @@ def simular_aposentadoria():
             retirada_maxima_mensal = cenario_mediano / (anos_gastando * 12)
 
         analise_ia = "Análise da IA não disponível. Verifique a chave de API no painel da Vercel."
-        # ... (código da IA) ...
+        if GOOGLE_API_KEY and genai:
+            prompt = f"""Aja como um planejador financeiro. Uma simulação de Monte Carlo para aposentadoria resultou nos seguintes valores de patrimônio bruto:
+            - Pior cenário (10% de chance de ser menor que): R$ {np.percentile(patrimonio_na_aposentadoria, 10):,.2f}
+            - Cenário mediano (valor mais provável): R$ {cenario_mediano:,.2f}
+            - Melhor cenário (10% de chance de ser maior que): R$ {np.percentile(patrimonio_na_aposentadoria, 90):,.2f}
+            Escreva um parágrafo curto e com tom profissional, explicando o que esses resultados significam para o plano de aposentadoria do cliente, destacando a importância da disciplina e consistência nos aportes para atingir os cenários mais otimistas."""
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content(prompt)
+            analise_ia = response.text
 
         return jsonify({
             'pessimista': np.percentile(patrimonio_na_aposentadoria, 10),
