@@ -1,5 +1,5 @@
 /* /js/script.js */
-// VERSÃO COMPLETA E FINAL COM TODAS AS FUNCIONALIDADES - VERIFICADO
+// VERSÃO COMPLETA E FINAL COM TODAS AS FUNCIONALIDADES
 
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -20,17 +20,14 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Erro ao ativar link de navegação:", e);
     }
 
-    // --- LÓGICA DA PÁGINA 'CLIENTES': Simulador com Gráfico e Anotação ---
+    // --- LÓGICA DA PÁGINA 'CLIENTES': Simulador com Visão Nominal/Real ---
     const retirementForm = document.getElementById('retirement-form');
     if (retirementForm) {
-        // Registra os plugins do Chart.js que vamos usar
-        Chart.register(window.ChartjsPluginAnnotation);
-
         let projectionChart = null; 
         let latestSimulationData = null; 
         let currentView = 'nominal'; 
 
-        const formatCurrency = (value) => (typeof value === 'number') ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
+        const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
         function updateView(viewType) {
             if (!latestSimulationData) return;
@@ -41,7 +38,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('btn-nominal').classList.toggle('active', viewType === 'nominal');
             document.getElementById('btn-real').classList.toggle('active', viewType === 'real');
 
-            let valPessimista = data.pessimista, valMediano = data.mediano, valOtimista = data.otimista, valHeranca = data.patrimonioFinalMediano;
+            let valPessimista = data.pessimista;
+            let valMediano = data.mediano;
+            let valOtimista = data.otimista;
+            let valHeranca = data.patrimonioFinalMediano;
             const anosAcumulando = parseInt(document.getElementById('retirement-age').value) - parseInt(document.getElementById('current-age').value);
 
             if (viewType === 'real') {
@@ -68,9 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
             projectionChart.data.datasets[0].data = chartData.otimista;
             projectionChart.data.datasets[1].data = chartData.mediano;
             projectionChart.data.datasets[2].data = chartData.pessimista;
-            projectionChart.options.plugins.annotation.annotations.retirementLine.xMin = String(data.anoAposentadoria);
-            projectionChart.options.plugins.annotation.annotations.retirementLine.xMax = String(data.anoAposentadoria);
             projectionChart.options.plugins.tooltip.callbacks.label = (c) => `Patrimônio (${viewType}): ${formatCurrency(c.parsed.y)}`;
+            projectionChart.options.scales.y.ticks.callback = (v) => formatCurrency(v).replace(/\s/g, '');
             projectionChart.update();
         }
 
@@ -98,43 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const results = await response.json();
                 if (!response.ok) { throw new Error(results.erro || 'Erro no servidor'); }
                 latestSimulationData = results; 
-
-                if (!projectionChart) {
-                    const ctx = document.getElementById('projection-chart').getContext('2d');
-                    projectionChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: results.graficoLabels,
-                            datasets: [
-                                { label: 'Cenário Otimista (90%)', data: [], borderColor: 'rgba(40, 167, 69, 0.3)', pointRadius: 0, borderWidth: 1 },
-                                { label: 'Projeção Mediana (50%)', data: [], borderColor: 'rgb(10, 66, 117)', backgroundColor: 'rgba(10, 66, 117, 0.1)', fill: '-1', tension: 0.2, pointRadius: 1, borderWidth: 2 },
-                                { label: 'Cenário Pessimista (10%)', data: [], borderColor: 'rgba(220, 53, 69, 0.3)', backgroundColor: 'rgba(10, 66, 117, 0.1)', fill: '-1', pointRadius: 0, borderWidth: 1 }
-                            ]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            scales: {
-                                x: { type: 'time', time: { unit: 'year', parser: 'yyyy', displayFormats: { year: 'yyyy' } } },
-                                y: { ticks: { callback: (v) => formatCurrency(v).replace(/\s/g, '') } }
-                            },
-                            plugins: {
-                                annotation: {
-                                    annotations: {
-                                        retirementLine: {
-                                            type: 'line',
-                                            xMin: "1900", xMax: "1900", // Valor inicial, será atualizado
-                                            borderColor: 'rgba(220, 53, 69, 0.7)',
-                                            borderWidth: 2,
-                                            borderDash: [6, 6],
-                                            label: { content: 'Aposentadoria', display: true, position: 'start', backgroundColor: 'rgba(220, 53, 69, 0.7)', font: { size: 10 } }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-                
                 document.getElementById('result-section').classList.remove('hidden');
                 document.getElementById('download-pdf').classList.remove('hidden');
                 if (results.analiseIA) {
@@ -144,9 +106,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (results.retiradaMaxima) {
                     document.getElementById('suggestion-card').classList.remove('hidden');
                 }
-                
+                if (!projectionChart) {
+                    const ctx = document.getElementById('projection-chart').getContext('2d');
+                    projectionChart = new Chart(ctx, { type: 'line', data: { labels: results.graficoLabels, datasets: [ { label: 'Cenário Otimista (90%)', data: [], borderColor: 'rgba(40, 167, 69, 0.3)', pointRadius: 0, borderWidth: 1 }, { label: 'Projeção Mediana (50%)', data: [], borderColor: 'rgb(10, 66, 117)', backgroundColor: 'rgba(10, 66, 117, 0.1)', fill: '-1', tension: 0.2, pointRadius: 1, borderWidth: 2 }, { label: 'Cenário Pessimista (10%)', data: [], borderColor: 'rgba(220, 53, 69, 0.3)', backgroundColor: 'rgba(10, 66, 117, 0.1)', fill: '-1', pointRadius: 0, borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false } });
+                }
                 updateView('nominal');
-
             } catch (error) {
                 console.error("Erro ao simular:", error);
                 alert("Não foi possível realizar a simulação. Tente novamente mais tarde.");
@@ -170,7 +134,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- LÓGICA DA PÁGINA 'INDICADORES' ---
     if (document.getElementById('indicators-container')) {
-        const ALPHA_VANTAGE_KEY = 'SUA_CHAVE_API_DA_ALPHA_VANTAGE_AQUI'; // Lembre-se de colocar sua chave aqui
+        const ALPHA_VANTAGE_KEY = 'SUA_CHAVE_API_DA_ALPHA_VANTAGE_AQUI'; 
+        // Lembre-se de colocar sua chave aqui
         
         const updateText = (elementId, value, suffix = '', precision = 2) => {
             const element = document.getElementById(elementId);
@@ -231,12 +196,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) { console.error('Erro ao buscar dados da Alpha Vantage:', error); }
         }
         
-        // Chamadas de histórico foram removidas da carga inicial para performance
-        // Podem ser adicionadas a um botão "Ver detalhes" no futuro
-        updateText('dolar-min-max-12m', '-');
-        updateText('ibov-ano', '-');
-        updateText('ibov-12m', '-');
-
         fetchBCBMacroData();
         fetchMarketData();
     }
