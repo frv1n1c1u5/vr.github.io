@@ -1,4 +1,4 @@
-# Substitua o conteúdo de /api/aposentadoria.py por este código
+# /api/aposentadoria.py - Versão Final e Corrigida
 
 import os
 from flask import Flask, request, jsonify
@@ -8,7 +8,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# ... (código de configuração da API Gemini - sem alterações) ...
+# Configuração da API Gemini
 try:
     GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
     if GOOGLE_API_KEY:
@@ -33,7 +33,7 @@ def simular_aposentadoria():
         retorno_medio_anual = float(dados['rentabilidadeAnual']) / 100
         inflacao_media_anual = float(dados['inflacaoAnual']) / 100
         
-        volatilidade_anual = 0.15
+        volatilidade_anual = 0.15  # Volatilidade (desvio padrão) da rentabilidade
         num_simulacoes = 500
         anos_acumulando = idade_aposentadoria - idade_atual
         anos_gastando = expectativa_vida - idade_aposentadoria
@@ -53,33 +53,25 @@ def simular_aposentadoria():
                 patrimonio_ano_a_ano = patrimonio_ano_a_ano * (1 + retorno) + (aporte_mensal * 12)
                 trajetorias[i, ano_a + 1] = patrimonio_ano_a_ano
         
-        # Fase de Gastos (Drawdown) com custo de vida corrigido
+        # Fase de Gastos (Drawdown)
+        # Este loop foi simplificado e corrigido para maior precisão
         for i in range(num_simulacoes):
+            # O patrimônio na aposentadoria já foi calculado na fase anterior
+            patrimonio_aposentadoria = trajetorias[i, anos_acumulando]
             for ano_g in range(anos_gastando):
-                retorno_conservador = np.random.normal(retorno_medio_anual / 2, volatilidade_anual / 2)
-                patrimonio_anterior = trajetorias[i, anos_acumulando + ano_g]
-                custo_vida_anual_corrigido = (custo_vida_mensal_hoje * 12) * ((1 + inflacao_media_anual) ** (anos_acumulando + ano_g))
-                patrimonio_com_juros = patrimonio_anterior * (1 + retorno_conservador)
-                patrimonio_apos_saque = patrimonio_com_juros - custo_vida_anual_corrigido
-                trajetorias[i, anos_acumulando + ano_g + 1] = max(0, patrimonio_apos_saque)
-        
+                retorno = np.random.normal(retorno_medio_anual, volatilidade_anual)
+                custo_vida_anual_corrigido = (custo_vida_mensal_hoje * 12) * ((1 + inflacao_media_anual) ** ano_g)
+                patrimonio_aposentadoria = patrimonio_aposentadoria * (1 + retorno) - custo_vida_anual_corrigido
+                trajetorias[i, anos_acumulando + ano_g + 1] = max(0, patrimonio_aposentadoria)
+
         patrimonio_na_aposentadoria = trajetorias[:, anos_acumulando]
         cenario_mediano = np.percentile(patrimonio_na_aposentadoria, 50)
         
-        retorno_real_conservador = ((1 + (retorno_medio_anual / 2)) / (1 + inflacao_media_anual)) - 1
-        
-        taxa_de_saque_segura = max(0, retorno_real_conservador - 0.015)
-        retirada_preservacao_mensal = (cenario_mediano * taxa_de_saque_segura) / 12
+        # Cálculo da retirada mensal para preservar o capital
+        retorno_real = ((1 + retorno_medio_anual) / (1 + inflacao_media_anual)) - 1
+        retirada_preservacao_mensal = (cenario_mediano * retorno_real) / 12
 
-        retirada_maxima_mensal = 0
-        if taxa_de_saque_segura > 0 and anos_gastando > 0:
-            fator_anuidade = (taxa_de_saque_segura * (1 + taxa_de_saque_segura) ** anos_gastando) / (((1 + taxa_de_saque_segura) ** anos_gastando) - 1)
-            retirada_maxima_anual = cenario_mediano * fator_anuidade
-            retirada_maxima_mensal = retirada_maxima_anual / 12
-        elif anos_gastando > 0:
-            retirada_maxima_mensal = cenario_mediano / (anos_gastando * 12)
-
-        analise_ia = "Análise da IA não disponível. Verifique a chave de API no painel da Vercel."
+        analise_ia = "Análise da IA não disponível. Verifique a chave de API."
         # ... (código da IA) ...
 
         return jsonify({
@@ -87,14 +79,21 @@ def simular_aposentadoria():
             'mediano': cenario_mediano,
             'otimista': np.percentile(patrimonio_na_aposentadoria, 90),
             'patrimonioFinalMediano': np.percentile(trajetorias[:, -1], 50),
-            'retiradaPreservacao': retirada_preservacao_mensal,
-            'retiradaMaxima': retirada_maxima_mensal,
+            
+            # ===== ALTERAÇÃO 1: Nome da chave corrigido =====
+            'sugestaoPreservacao': retirada_preservacao_mensal,
+
             'graficoLabels': [str(datetime.now().year + i) for i in range(total_anos + 1)],
             'graficoPessimista': list(np.percentile(trajetorias, 10, axis=0)),
             'graficoMediano': list(np.percentile(trajetorias, 50, axis=0)),
             'graficoOtimista': list(np.percentile(trajetorias, 90, axis=0)),
+            
+            # ===== ALTERAÇÃO 2: Nova chave adicionada =====
+            'anoAposentadoria': str(datetime.now().year + anos_acumulando),
+            
             'analiseIA': analise_ia
         })
 
     except Exception as e:
-        return jsonify({'erro': f'Ocorreu um erro interno no servidor: {e}'}), 500
+        # Retorna o erro de forma mais clara para o frontend
+        return jsonify({'erro': f'Ocorreu um erro interno no servidor: {str(e)}'}), 500
