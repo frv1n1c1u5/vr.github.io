@@ -23,9 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- LÓGICA DA PÁGINA 'CLIENTES': Simulador com Visão Nominal/Real ---
     const retirementForm = document.getElementById('retirement-form');
     if (retirementForm) {
-        let projectionChart = null;
-        let latestSimulationData = null;
-        let currentView = 'nominal';
+        let projectionChart = null; 
+        let latestSimulationData = null; 
+        let currentView = 'nominal'; 
 
         const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentView = viewType;
             const data = latestSimulationData;
             const inflationRate = parseFloat(document.getElementById('annual-inflation').value) / 100;
-
+            
             document.getElementById('btn-nominal').classList.toggle('active', viewType === 'nominal');
             document.getElementById('btn-real').classList.toggle('active', viewType === 'real');
 
@@ -42,8 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
             let valMediano = data.mediano;
             let valOtimista = data.otimista;
             let valHeranca = data.patrimonioFinalMediano;
-            let valSugestao = data.retiradaSustentavel;
-
             const anosAcumulando = parseInt(document.getElementById('retirement-age').value) - parseInt(document.getElementById('current-age').value);
 
             if (viewType === 'real') {
@@ -58,14 +56,15 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('mediano-value').textContent = formatCurrency(valMediano);
             document.getElementById('otimista-value').textContent = formatCurrency(valOtimista);
             document.getElementById('heranca-value').textContent = formatCurrency(valHeranca);
-            document.getElementById('sugestao-retirada').textContent = formatCurrency(valSugestao);
+            document.getElementById('sugestao-preservacao').textContent = formatCurrency(data.retiradaPreservacao);
+            document.getElementById('sugestao-maxima').textContent = formatCurrency(data.retiradaMaxima);
 
             const chartData = {
                 pessimista: viewType === 'real' ? data.graficoPessimista.map((v, i) => v / Math.pow(1 + inflationRate, i)) : data.graficoPessimista,
                 mediano: viewType === 'real' ? data.graficoMediano.map((v, i) => v / Math.pow(1 + inflationRate, i)) : data.graficoMediano,
                 otimista: viewType === 'real' ? data.graficoOtimista.map((v, i) => v / Math.pow(1 + inflationRate, i)) : data.graficoOtimista,
             };
-
+            
             projectionChart.data.datasets[0].data = chartData.otimista;
             projectionChart.data.datasets[1].data = chartData.mediano;
             projectionChart.data.datasets[2].data = chartData.pessimista;
@@ -97,15 +96,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const response = await fetch('/api/aposentadoria', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
                 const results = await response.json();
                 if (!response.ok) { throw new Error(results.erro || 'Erro no servidor'); }
-                latestSimulationData = results;
+                latestSimulationData = results; 
                 document.getElementById('result-section').classList.remove('hidden');
                 document.getElementById('download-pdf').classList.remove('hidden');
                 if (results.analiseIA) {
                     document.getElementById('ai-text').innerHTML = results.analiseIA.replace(/\n/g, '<br>');
                     document.getElementById('ai-analysis').classList.remove('hidden');
                 }
-                if (results.retiradaSustentavel) {
-                    document.getElementById('sugestao-retirada').textContent = formatCurrency(results.retiradaSustentavel);
+                if (results.retiradaMaxima) {
                     document.getElementById('suggestion-card').classList.remove('hidden');
                 }
                 if (!projectionChart) {
@@ -121,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitButton.disabled = false;
             }
         });
-
+        
         document.getElementById('download-pdf').addEventListener('click', function() {
             const reportElement = document.getElementById('report-container');
             const titleElement = reportElement.querySelector('h3');
@@ -136,8 +134,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- LÓGICA DA PÁGINA 'INDICADORES' ---
     if (document.getElementById('indicators-container')) {
-        const ALPHA_VANTAGE_KEY = 'SUA_CHAVE_API_DA_ALPHA_VANTAGE_AQUI'; // Lembre-se de colocar sua chave aqui
-        // ... (código completo dos indicadores que forneci anteriormente) ...
+        const ALPHA_VANTAGE_KEY = 'SUA_CHAVE_API_DA_ALPHA_VANTAGE_AQUI'; 
+        // Lembre-se de colocar sua chave aqui
+        
+        const updateText = (elementId, value, suffix = '', precision = 2) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                const numericValue = parseFloat(value);
+                element.textContent = !isNaN(numericValue) ? `${numericValue.toFixed(precision)}${suffix}` : (value || 'N/A');
+            }
+        };
+
+        const updateColoredText = (elementId, value, suffix = '', precision = 2) => {
+             const element = document.getElementById(elementId);
+            if (element) {
+                const numericValue = parseFloat(value);
+                 if (!isNaN(numericValue)) {
+                    element.textContent = `${numericValue > 0 ? '+' : ''}${numericValue.toFixed(precision)}${suffix}`;
+                    element.classList.remove('positive', 'negative');
+                    if(numericValue > 0) element.classList.add('positive');
+                    if(numericValue < 0) element.classList.add('negative');
+                } else {
+                    element.textContent = value || 'N/A';
+                }
+            }
+        };
+
+        async function fetchBCBMacroData() {
+            const seriesIds = { 'ipca-ano': 433, 'ipca-12m': 13522, 'selic-ano': 11, 'selic-12m': 4189, 'igpm-ano': 189, 'igpm-12m': 190 };
+            const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${Object.values(seriesIds).join(',')}/dados/ultimos/1?formato=json`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Falha na resposta da API do BCB');
+                const data = await response.json();
+                updateText('ipca-ano', data.find(d => d.codigoSerie == seriesIds['ipca-ano']).valor, '%');
+                updateText('ipca-12m', data.find(d => d.codigoSerie == seriesIds['ipca-12m']).valor, '%');
+                updateText('selic-ano', data.find(d => d.codigoSerie == seriesIds['selic-ano']).valor, '%');
+                updateText('selic-12m', data.find(d => d.codigoSerie == seriesIds['selic-12m']).valor, '%');
+                updateText('igpm-ano', data.find(d => d.codigoSerie == seriesIds['igpm-ano']).valor, '%');
+                updateText('igpm-12m', data.find(d => d.codigoSerie == seriesIds['igpm-12m']).valor, '%');
+            } catch (error) { console.error('Erro BCB Macro:', error); }
+        }
+
+        async function fetchMarketData() {
+            if (ALPHA_VANTAGE_KEY === 'SUA_CHAVE_API_DA_ALPHA_VANTAGE_AQUI') {
+                return console.error("A chave da API da Alpha Vantage não foi definida.");
+            }
+            const urlIbov = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBOV.SA&apikey=${ALPHA_VANTAGE_KEY}`;
+            const urlDolar = `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=BRL&apikey=${ALPHA_VANTAGE_KEY}`;
+            try {
+                const [ibovResponse, dolarResponse] = await Promise.all([fetch(urlIbov), fetch(urlDolar)]);
+                const ibovData = await ibovResponse.json();
+                const dolarData = await dolarResponse.json();
+                const ibovQuote = ibovData['Global Quote'];
+                const dolarQuote = dolarData['Realtime Currency Exchange Rate'];
+                if (dolarQuote) updateText('dolar-atual', dolarQuote['5. Exchange Rate'], 'R$ ', 4);
+                if (ibovQuote) {
+                    updateText('ibov-pontos', ibovQuote['05. price'], '', 0);
+                    updateColoredText('ibov-dia', ibovQuote['10. change percent'].replace('%',''), '%');
+                }
+            } catch (error) { console.error('Erro ao buscar dados da Alpha Vantage:', error); }
+        }
+        
+        fetchBCBMacroData();
+        fetchMarketData();
     }
     
     // --- LÓGICA DA PÁGINA 'TRADUTOR FINANCEIRO' ---
