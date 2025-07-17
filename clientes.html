@@ -4,90 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ferramentas para Clientes | Vinicius Rocha</title>
-    <meta name="description" content="Simuladores e ferramentas financeiras para ajudar no seu planejamento: Aposentadoria, Financiamento vs Aluguel e mais.">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
-</head>
+    </head>
 <body>
-
     <header class="sticky-header">
-        <div class="container">
-            <a href="index.html" class="logo">Vinicius Rocha</a>
-            <nav>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="sobre.html">Sobre Mim</a></li>
-                    <li><a href="assessores.html">Para Assessores</a></li>
-                    <li><a href="clientes.html" class="active">Para Clientes</a></li>
-                    <li><a href="indicadores.html">Indicadores</a></li>
-                    <li><a href="blog.html">Blog</a></li>
-                    <li><a href="contato.html">Contato</a></li>
-                    <li class="menu-button"><a href="https://wa.me/5551999381379?text=Ol%C3%A1%20Vinicius%2C%20vi%20seu%20site%20e%20gostaria%20de%20saber%20mais" target="_blank">Fale Comigo</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
+        </header>
     <main>
         <section class="content-page">
             <div class="container">
-                
                 <div class="tool-tabs">
                     <button class="tab-link active" data-tab="tab-aposentadoria">Simulador de Aposentadoria</button>
                     <button class="tab-link" data-tab="tab-comparador">Financiamento x Aluguel</button>
                 </div>
-
                 <div class="tool-content">
-                    
                     <div id="tab-aposentadoria" class="tab-pane active">
                         <h2>Simulador de Cenários de Aposentadoria</h2>
-                        <p class="page-intro">Preencha os campos abaixo para rodar uma simulação de Monte Carlo e entender as probabilidades e cenários para o seu futuro financeiro.</p>
+                        <p class="page-intro">...</p>
                         <div class="calculator-container">
                             <form id="retirement-form">
-                                <div class="form-grid">
-                                    <div class="form-group"><label for="current-age">Idade atual</label><input type="number" id="current-age" value="30" required></div>
-                                    <div class="form-group"><label for="retirement-age">Idade para aposentadoria</label><input type="number" id="retirement-age" value="60" required></div>
-                                    <div class="form-group"><label for="current-patrimony">Patrimônio atual (R$)</label><input type="number" id="current-patrimony" value="100000" required></div>
-                                    <div class="form-group"><label for="monthly-contribution">Aporte mensal (R$)</label><input type="number" id="monthly-contribution" value="1000" required></div>
-                                    <div class="form-group"><label for="annual-return">Rentabilidade média anual (%)</label><input type="number" id="annual-return" step="0.1" value="9.0" required></div>
-                                    <div class="form-group"><label for="annual-inflation">Inflação anual esperada (%)</label><input type="number" id="annual-inflation" step="0.1" value="4.0" required></div>
-                                    <div class="form-group"><label for="post-retirement-cost">Custo de vida mensal desejado (R$)</label><input type="number" id="post-retirement-cost" value="5000" required></div>
-                                    <div class="form-group"><label for="life-expectancy">Expectativa de vida (anos)</label><input type="number" id="life-expectancy" value="85" required></div>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Analisar Cenários</button>
-                            </form>
+                                </form>
                             <div id="retirement-results" class="hidden">
-                                </div>
+                                <h3>Análise de Cenários</h3>
+                                <div class="chart-container"><canvas id="retirement-chart"></canvas></div>
+                                <div class="scenarios-grid">
+                                    </div>
+                                <div id="suggestion-card" class="hidden">
+                                    </div>
+                                <div id="ai-analysis" class="hidden">
+                                    </div>
+                            </div>
                         </div>
                     </div>
-
                     <div id="tab-comparador" class="tab-pane">
                         <h2>Financiamento vs. Aluguel vs. Consórcio</h2>
-                        <p class="page-intro">Descubra qual caminho faz mais sentido para seus objetivos, analisando a evolução do seu patrimônio em cada cenário.</p>
+                        <p class="page-intro">...</p>
                         <div class="calculator-container">
-                            <form id="comparison-form">
-                                <div class="form-grid">
-                                    <div class="form-group"><label>Valor do Imóvel (R$)</label><input type="number" id="comp-valor-imovel" value="500000"></div>
-                                    <div class="form-group"><label>Valor da Entrada (R$)</label><input type="number" id="comp-valor-entrada" value="100000"></div>
-                                    <div class="form-group"><label>Prazo da Análise (anos)</label><input type="number" id="comp-prazo-anos" value="30"></div>
-                                    <div class="form-group"><label>Valorização Anual do Imóvel (%)</label><input type="number" id="comp-valorizacao-imovel" value="5.0" step="0.1"></div>
-                                    <div class="form-group"><label>Juros do Financiamento (ao ano %)</label><input type="number" id="comp-juros-financiamento" value="11.0" step="0.1"></div>
-                                    <div class="form-group"><label>Valor do Aluguel Mensal (R$)</label><input type="number" id="comp-valor-aluguel" value="2500"></div>
-                                    <div class="form-group"><label>Reajuste Anual do Aluguel (%)</label><input type="number" id="comp-reajuste-aluguel" value="4.0" step="0.1"></div>
-                                    <div class="form-group"><label>Taxa de Adm. Total do Consórcio (%)</label><input type="number" id="comp-taxa-consorcio" value="20.0" step="0.1"></div>
-                                    <div class="form-group"><label>Rentabilidade dos Investimentos (ao ano %)</label><input type="number" id="comp-rentabilidade-investimentos" value="10.0" step="0.1"></div>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Comparar Cenários</button>
-                            </form>
+                             <form id="comparison-form">
+                                </form>
                             <div id="comparison-results" class="hidden">
                                 <h3>Evolução do Patrimônio Líquido</h3>
-                                <div class="chart-container">
-                                    <canvas id="comparison-chart"></canvas>
-                                </div>
+                                <div class="chart-container"><canvas id="comparison-chart"></canvas></div>
+                                <div id="comparison-summary" class="scenarios-grid"></div>
                             </div>
                         </div>
                     </div>
@@ -95,13 +54,8 @@
             </div>
         </section>
     </main>
-
     <footer class="sticky-header">
-       <div class="container">
-            <p>&copy; 2025 Vinicius Rocha | Todos os direitos reservados.</p>
-        </div>
-    </footer>
-    
+        </footer>
     <script src="js/script.js"></script>
 </body>
 </html>
