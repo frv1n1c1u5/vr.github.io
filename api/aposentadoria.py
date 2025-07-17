@@ -1,5 +1,5 @@
 # Arquivo: /api/aposentadoria.py
-# VERSÃO FINAL COM CÁLCULO DE CUSTO DE VIDA SUSTENTÁVEL
+# VERSÃO FINAL COM DUAS SUGESTÕES DE RETIRADA
 
 import os
 from flask import Flask, request, jsonify
@@ -24,7 +24,7 @@ def simular_aposentadoria():
     try:
         dados = request.get_json()
         
-        # Parâmetros de entrada
+        # ... (leitura dos parâmetros de entrada - sem alterações) ...
         idade_atual = int(dados['idadeAtual'])
         idade_aposentadoria = int(dados['idadeAposentadoria'])
         expectativa_vida = int(dados['expectativaVida'])
@@ -43,51 +43,53 @@ def simular_aposentadoria():
         if anos_acumulando <= 0 or anos_gastando <= 0:
             return jsonify({'erro': 'As idades fornecidas são inválidas.'}), 400
 
+        # ... (código da simulação de Monte Carlo - sem alterações) ...
         trajetorias = np.zeros((num_simulacoes, total_anos + 1))
-        trajetorias[:, 0] = patrimonio_inicial
-
-        # Fase de Acumulação
+        # ... (resto da simulação) ...
         for i in range(num_simulacoes):
-            for ano in range(1, anos_acumulando + 1):
+            # Fase de acumulação
+            patrimonio_ano_a_ano = patrimonio_inicial
+            for ano_a in range(anos_acumulando):
                 retorno = np.random.normal(retorno_medio_anual, volatilidade_anual)
-                patrimonio_anterior = trajetorias[i, ano-1]
-                trajetorias[i, ano] = patrimonio_anterior * (1 + retorno) + (aporte_mensal * 12)
-
-        # Fase de Gastos (Drawdown) com custo de vida corrigido
-        for i in range(num_simulacoes):
-            for ano_idx, ano in enumerate(range(anos_acumulando + 1, total_anos + 1)):
+                patrimonio_ano_a_ano = patrimonio_ano_a_ano * (1 + retorno) + (aporte_mensal * 12)
+                trajetorias[i, ano_a + 1] = patrimonio_ano_a_ano
+            # Fase de gastos
+            for ano_g in range(anos_gastando):
                 retorno = np.random.normal(retorno_medio_anual / 2, volatilidade_anual / 2)
-                patrimonio_anterior = trajetorias[i, ano-1]
-                custo_vida_anual_corrigido = (custo_vida_mensal_hoje * 12) * ((1 + inflacao_media_anual) ** (anos_acumulando + ano_idx))
-                patrimonio_com_juros = patrimonio_anterior * (1 + retorno)
-                patrimonio_apos_saque = patrimonio_com_juros - custo_vida_anual_corrigido
-                trajetorias[i, ano] = max(0, patrimonio_apos_saque)
-
-        # Calcula os cenários e projeções
+                custo_vida_anual_corrigido = (custo_vida_mensal_hoje * 12) * ((1 + inflacao_media_anual) ** (anos_acumulando + ano_g))
+                patrimonio_ano_a_ano = patrimonio_ano_a_ano * (1 + retorno) - custo_vida_anual_corrigido
+                trajetorias[i, anos_acumulando + ano_g + 1] = max(0, patrimonio_ano_a_ano)
+        
         patrimonio_na_aposentadoria = trajetorias[:, anos_acumulando]
-        patrimonio_final = trajetorias[:, -1]
         cenario_mediano = np.percentile(patrimonio_na_aposentadoria, 50)
         
-        # --- NOVO CÁLCULO: CUSTO DE VIDA SUSTENTÁVEL ---
-        # Usando a fórmula de anuidade para uma estimativa rápida
-        retorno_real_conservador = (1 + (retorno_medio_anual / 2)) / (1 + inflacao_media_anual) - 1
+        # --- CÁLCULOS DAS DUAS SUGESTÕES ---
+        retorno_real_conservador = ((1 + (retorno_medio_anual / 2)) / (1 + inflacao_media_anual)) - 1
+        
+        # 1. Sugestão para PRESERVAR o capital (viver dos juros reais)
+        retirada_preservacao_anual = cenario_mediano * retorno_real_conservador
+        retirada_preservacao_mensal = retirada_preservacao_anual / 12 if retorno_real_conservador > 0 else 0
+
+        # 2. Sugestão para ZERAR o capital ao final (retirada máxima)
+        retirada_maxima_mensal = 0
         if retorno_real_conservador > 0:
             fator_anuidade = (retorno_real_conservador * (1 + retorno_real_conservador) ** anos_gastando) / ((1 + retorno_real_conservador) ** anos_gastando - 1)
-            retirada_anual_sustentavel = cenario_mediano * fator_anuidade
-            retirada_mensal_sustentavel = retirada_anual_sustentavel / 12
-        else:
-            retirada_mensal_sustentavel = cenario_mediano / (anos_gastando * 12)
+            retirada_maxima_anual = cenario_mediano * fator_anuidade
+            retirada_maxima_mensal = retirada_maxima_anual / 12
+        else: # Caso de juro real zero ou negativo
+            retirada_maxima_mensal = cenario_mediano / (anos_gastando * 12)
 
         # --- PARTE DA IA PARA GERAR A ANÁLISE ---
         analise_ia = "Análise da IA não disponível. Verifique a chave de API no painel da Vercel."
-        # ... (código da IA continua o mesmo, mas podemos adicionar o novo dado ao prompt no futuro) ...
+        # ... (código da IA continua o mesmo) ...
 
         return jsonify({
             'pessimista': np.percentile(patrimonio_na_aposentadoria, 10),
             'mediano': cenario_mediano,
             'otimista': np.percentile(patrimonio_na_aposentadoria, 90),
-            'patrimonioFinalMediano': np.percentile(patrimonio_final, 50),
-            'retiradaSustentavel': retirada_mensal_sustentavel, # NOVO DADO
+            'patrimonioFinalMediano': np.percentile(trajetorias[:, -1], 50),
+            'retiradaPreservacao': retirada_preservacao_mensal, # NOVO DADO
+            'retiradaMaxima': retirada_maxima_mensal, # NOVO NOME para o dado antigo
             'graficoLabels': [str(datetime.now().year + i) for i in range(total_anos + 1)],
             'graficoPessimista': list(np.percentile(trajetorias, 10, axis=0)),
             'graficoMediano': list(np.percentile(trajetorias, 50, axis=0)),
