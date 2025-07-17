@@ -81,6 +81,11 @@
                         <div id="result-section" class="hidden">
                             <h3>Análise de Cenários</h3>
                             
+                            <div class="view-toggle">
+                                <button id="btn-nominal" class="toggle-btn active">Ver Valores Nominais</button>
+                                <button id="btn-real" class="toggle-btn">Ver Poder de Compra (Real)</button>
+                            </div>
+
                             <div class="chart-container">
                                 <canvas id="projection-chart"></canvas>
                             </div>
@@ -88,18 +93,23 @@
                             <div class="scenarios-grid">
                                 <div class="scenario-card">
                                     <h4>Cenário Pessimista</h4>
-                                    <p>10% de chance de ser menor que:</p>
+                                    <p>Patrimônio ao se aposentar:</p>
                                     <strong id="pessimista-value" class="result-value negative"></strong>
                                 </div>
                                 <div class="scenario-card">
                                     <h4>Cenário Mediano</h4>
-                                    <p>Valor mais provável:</p>
+                                    <p>Patrimônio ao se aposentar:</p>
                                     <strong id="mediano-value" class="result-value"></strong>
                                 </div>
                                 <div class="scenario-card">
                                     <h4>Cenário Otimista</h4>
-                                    <p>10% de chance de ser maior que:</p>
+                                    <p>Patrimônio ao se aposentar:</p>
                                     <strong id="otimista-value" class="result-value positive"></strong>
+                                </div>
+                                <div class="scenario-card">
+                                    <h4>Patrimônio Final (Herança)</h4>
+                                    <p>Estimativa mediana no fim da vida:</p>
+                                    <strong id="heranca-value" class="result-value"></strong>
                                 </div>
                             </div>
 
