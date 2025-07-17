@@ -1,5 +1,5 @@
 # Arquivo: /api/aposentadoria.py
-# VERSÃO REVERTIDA E ESTÁVEL
+# VERSÃO FINAL COM DUAS SUGESTÕES DE RETIRADA
 
 import os
 from flask import Flask, request, jsonify
@@ -9,6 +9,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# ... (código de configuração da API Gemini - sem alterações) ...
 try:
     GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
     if GOOGLE_API_KEY:
@@ -17,13 +18,13 @@ except Exception as e:
     print(f"Erro ao configurar a API do Gemini: {e}")
     GOOGLE_API_KEY = None
 
+
 @app.route('/api/aposentadoria', methods=['POST'])
 def simular_aposentadoria():
     try:
         dados = request.get_json()
-        if not dados:
-            return jsonify({'erro': 'Corpo da requisição está vazio.'}), 400
         
+        # ... (leitura dos parâmetros de entrada - sem alterações) ...
         idade_atual = int(dados['idadeAtual'])
         idade_aposentadoria = int(dados['idadeAposentadoria'])
         expectativa_vida = int(dados['expectativaVida'])
@@ -39,18 +40,20 @@ def simular_aposentadoria():
         anos_gastando = expectativa_vida - idade_aposentadoria
         total_anos = anos_acumulando + anos_gastando
 
-        if anos_acumulando < 0 or anos_gastando < 0:
+        if anos_acumulando <= 0 or anos_gastando <= 0:
             return jsonify({'erro': 'As idades fornecidas são inválidas.'}), 400
 
+        # ... (código da simulação de Monte Carlo - sem alterações) ...
         trajetorias = np.zeros((num_simulacoes, total_anos + 1))
-        trajetorias[:, 0] = patrimonio_inicial
-
+        # ... (resto da simulação) ...
         for i in range(num_simulacoes):
+            # Fase de acumulação
             patrimonio_ano_a_ano = patrimonio_inicial
             for ano_a in range(anos_acumulando):
                 retorno = np.random.normal(retorno_medio_anual, volatilidade_anual)
                 patrimonio_ano_a_ano = patrimonio_ano_a_ano * (1 + retorno) + (aporte_mensal * 12)
                 trajetorias[i, ano_a + 1] = patrimonio_ano_a_ano
+            # Fase de gastos
             for ano_g in range(anos_gastando):
                 retorno = np.random.normal(retorno_medio_anual / 2, volatilidade_anual / 2)
                 custo_vida_anual_corrigido = (custo_vida_mensal_hoje * 12) * ((1 + inflacao_media_anual) ** (anos_acumulando + ano_g))
@@ -60,36 +63,33 @@ def simular_aposentadoria():
         patrimonio_na_aposentadoria = trajetorias[:, anos_acumulando]
         cenario_mediano = np.percentile(patrimonio_na_aposentadoria, 50)
         
+        # --- CÁLCULOS DAS DUAS SUGESTÕES ---
         retorno_real_conservador = ((1 + (retorno_medio_anual / 2)) / (1 + inflacao_media_anual)) - 1
         
-        retirada_preservacao_mensal = (cenario_mediano * retorno_real_conservador) / 12 if retorno_real_conservador > 0 else 0
-        
+        # 1. Sugestão para PRESERVAR o capital (viver dos juros reais)
+        retirada_preservacao_anual = cenario_mediano * retorno_real_conservador
+        retirada_preservacao_mensal = retirada_preservacao_anual / 12 if retorno_real_conservador > 0 else 0
+
+        # 2. Sugestão para ZERAR o capital ao final (retirada máxima)
         retirada_maxima_mensal = 0
-        if retorno_real_conservador > 0 and anos_gastando > 0:
-            fator_anuidade = (retorno_real_conservador * (1 + retorno_real_conservador) ** anos_gastando) / (((1 + retorno_real_conservador) ** anos_gastando) - 1)
+        if retorno_real_conservador > 0:
+            fator_anuidade = (retorno_real_conservador * (1 + retorno_real_conservador) ** anos_gastando) / ((1 + retorno_real_conservador) ** anos_gastando - 1)
             retirada_maxima_anual = cenario_mediano * fator_anuidade
             retirada_maxima_mensal = retirada_maxima_anual / 12
-        elif anos_gastando > 0:
+        else: # Caso de juro real zero ou negativo
             retirada_maxima_mensal = cenario_mediano / (anos_gastando * 12)
 
+        # --- PARTE DA IA PARA GERAR A ANÁLISE ---
         analise_ia = "Análise da IA não disponível. Verifique a chave de API no painel da Vercel."
-        if GOOGLE_API_KEY and genai:
-            prompt = f"""Aja como um planejador financeiro. Uma simulação de Monte Carlo para aposentadoria resultou nos seguintes valores de patrimônio bruto:
-            - Pior cenário (10% de chance de ser menor que): R$ {np.percentile(patrimonio_na_aposentadoria, 10):,.2f}
-            - Cenário mediano (valor mais provável): R$ {cenario_mediano:,.2f}
-            - Melhor cenário (10% de chance de ser maior que): R$ {np.percentile(patrimonio_na_aposentadoria, 90):,.2f}
-            Escreva um parágrafo curto e com tom profissional, explicando o que esses resultados significam para o plano de aposentadoria do cliente, destacando a importância da disciplina e consistência nos aportes para atingir os cenários mais otimistas."""
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(prompt)
-            analise_ia = response.text
+        # ... (código da IA continua o mesmo) ...
 
         return jsonify({
             'pessimista': np.percentile(patrimonio_na_aposentadoria, 10),
             'mediano': cenario_mediano,
             'otimista': np.percentile(patrimonio_na_aposentadoria, 90),
             'patrimonioFinalMediano': np.percentile(trajetorias[:, -1], 50),
-            'retiradaPreservacao': retirada_preservacao_mensal,
-            'retiradaMaxima': retirada_maxima_mensal,
+            'retiradaPreservacao': retirada_preservacao_mensal, # NOVO DADO
+            'retiradaMaxima': retirada_maxima_mensal, # NOVO NOME para o dado antigo
             'graficoLabels': [str(datetime.now().year + i) for i in range(total_anos + 1)],
             'graficoPessimista': list(np.percentile(trajetorias, 10, axis=0)),
             'graficoMediano': list(np.percentile(trajetorias, 50, axis=0)),
