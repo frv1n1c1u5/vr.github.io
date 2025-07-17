@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ferramentas para Clientes | Vinicius Rocha</title>
     <meta name="description" content="Simuladores e ferramentas financeiras para ajudar no seu planejamento: Aposentadoria, Financiamento vs Aluguel e mais.">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,11 +40,14 @@
     <main>
         <section class="content-page">
             <div class="container">
+                
                 <div class="tool-tabs">
                     <button class="tab-link active" data-tab="tab-aposentadoria">Simulador de Aposentadoria</button>
                     <button class="tab-link" data-tab="tab-comparador">Financiamento x Aluguel</button>
                 </div>
+
                 <div class="tool-content">
+                    
                     <div id="tab-aposentadoria" class="tab-pane active">
                         <h2>Simulador de Cenários de Aposentadoria</h2>
                         <p class="page-intro">Preencha os campos abaixo para rodar uma simulação de Monte Carlo e entender as probabilidades e cenários para o seu futuro financeiro.</p>
@@ -85,6 +90,7 @@
                             <button id="download-pdf" class="btn hidden" style="width: 100%; margin-top: 2rem;">Exportar Relatório em PDF</button>
                         </div>
                     </div>
+
                     <div id="tab-comparador" class="tab-pane">
                         <h2>Financiamento vs. Aluguel vs. Consórcio</h2>
                         <p class="page-intro">Descubra qual caminho faz mais sentido para seus objetivos, analisando a evolução do seu patrimônio em cada cenário.</p>
@@ -106,7 +112,7 @@
                             <div id="comparison-results" class="hidden">
                                 <h3>Evolução do Patrimônio Líquido</h3>
                                 <div class="chart-container"><canvas id="comparison-chart"></canvas></div>
-                                <div id="comparison-summary" class="scenarios-grid hidden"></div>
+                                <div id="comparison-summary" class="scenarios-grid"></div>
                             </div>
                         </div>
                     </div>
@@ -114,11 +120,13 @@
             </div>
         </section>
     </main>
+
     <footer class="sticky-header">
        <div class="container">
             <p>&copy; 2025 Vinicius Rocha | Todos os direitos reservados.</p>
         </div>
     </footer>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="js/script.js"></script>
 </body>
