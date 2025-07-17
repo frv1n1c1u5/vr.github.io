@@ -13,8 +13,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <header class="sticky-header">
-        </header>
+        <div class="container">
+            <a href="index.html" class="logo">Vinicius Rocha</a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="sobre.html">Sobre Mim</a></li>
+                    <li><a href="assessores.html">Para Assessores</a></li>
+                    <li><a href="clientes.html" class="active">Para Clientes</a></li>
+                    <li><a href="indicadores.html">Indicadores</a></li>
+                    <li><a href="blog.html">Blog</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                    <li class="menu-button"><a href="https://wa.me/5551999381379?text=Ol%C3%A1%20Vinicius%2C%20vi%20seu%20site%20e%20gostaria%20de%20saber%20mais" target="_blank">Fale Comigo</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
     <main>
         <section class="content-page">
@@ -24,7 +40,35 @@
                 
                 <div class="calculator-container">
                     <form id="retirement-form">
-                        </form>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="current-age">Idade atual</label>
+                                <input type="number" id="current-age" value="30" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="retirement-age">Idade para aposentadoria</label>
+                                <input type="number" id="retirement-age" value="60" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="current-patrimony">Patrimônio atual (R$)</label>
+                                <input type="number" id="current-patrimony" value="50000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="monthly-contribution">Aporte mensal (R$)</label>
+                                <input type="number" id="monthly-contribution" value="1000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="annual-return">Rentabilidade média anual (%)</label>
+                                <input type="number" id="annual-return" step="0.1" value="8.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="annual-inflation">Inflação anual esperada (%)</label>
+                                <input type="number" id="annual-inflation" step="0.1" value="4.0">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Analisar Cenários</button>
+                    </form>
                     
                     <div id="report-container">
                         <div id="result-section" class="hidden">
@@ -35,7 +79,22 @@
                             </div>
                             
                             <div class="scenarios-grid">
+                                <div class="scenario-card">
+                                    <h4>Cenário Pessimista</h4>
+                                    <p>10% de chance de ser menor que:</p>
+                                    <strong id="pessimista-value" class="result-value negative"></strong>
                                 </div>
+                                <div class="scenario-card">
+                                    <h4>Cenário Mediano</h4>
+                                    <p>Valor mais provável:</p>
+                                    <strong id="mediano-value" class="result-value"></strong>
+                                </div>
+                                <div class="scenario-card">
+                                    <h4>Cenário Otimista</h4>
+                                    <p>10% de chance de ser maior que:</p>
+                                    <strong id="otimista-value" class="result-value positive"></strong>
+                                </div>
+                            </div>
 
                             <div id="ai-analysis" class="hidden">
                                 <h4>Análise Inteligente</h4>
@@ -50,7 +109,10 @@
     </main>
 
     <footer class="sticky-header">
-       </footer>
+       <div class="container">
+            <p>&copy; 2025 Vinicius Rocha | Todos os direitos reservados.</p>
+        </div>
+    </footer>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="js/script.js"></script>
