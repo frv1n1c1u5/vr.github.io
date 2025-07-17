@@ -1,8 +1,19 @@
-/* /js/script.js - Versão Final e Completa com Todas as Ferramentas */
+/* /js/script.js - Versão Refatorada e Otimizada */
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    // --- LÓGICA GERAL: Destacar link de navegação ---
+    /**
+     * Função utilitária para formatar números como moeda brasileira (BRL).
+     * Definida uma vez para ser reutilizada em todo o script.
+     * @param {number} value O valor numérico a ser formatado.
+     * @returns {string} O valor formatado como moeda ou uma string vazia se a entrada for inválida.
+     */
+    const formatCurrency = (value) => {
+        if (typeof value !== 'number') return ''; // Retorna vazio se o valor não for um número
+        return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+
+    // --- LÓGICA GERAL: Destacar link de navegação ativo ---
     try {
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         document.querySelectorAll('nav a:not(.menu-button a)').forEach(link => {
@@ -10,30 +21,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 link.classList.add('active');
             }
         });
-    } catch(e) { console.error("Erro na navegação", e); }
+    } catch (e) { console.error("Erro na lógica de navegação ativa:", e); }
 
-    // --- LÓGICA DA PÁGINA 'CLIENTES': Navegação por Abas ---
+    // --- LÓGICA DA PÁGINA 'CLIENTES': Navegação por Abas com Event Delegation (Otimizado) ---
     const tabsContainer = document.querySelector(".tool-tabs");
     if (tabsContainer) {
         const tabLinks = document.querySelectorAll(".tab-link");
         const tabPanes = document.querySelectorAll(".tab-pane");
-        tabLinks.forEach(link => {
-            link.addEventListener("click", () => {
-                tabLinks.forEach(l => l.classList.remove("active"));
-                tabPanes.forEach(p => p.classList.remove("active"));
-                link.classList.add("active");
-                const targetTab = document.getElementById(link.dataset.tab);
-                if (targetTab) {
-                    targetTab.classList.add("active");
-                }
-            });
+
+        tabsContainer.addEventListener('click', function(event) {
+            const clickedLink = event.target.closest('.tab-link');
+            if (!clickedLink) return; // Ignora cliques que não são em um link de aba
+
+            // Remove a classe 'active' de todas as abas e painéis
+            tabLinks.forEach(l => l.classList.remove("active"));
+            tabPanes.forEach(p => p.classList.remove("active"));
+
+            // Adiciona a classe 'active' ao link clicado e ao painel alvo
+            clickedLink.classList.add("active");
+            const targetTab = document.getElementById(clickedLink.dataset.tab);
+            if (targetTab) {
+                targetTab.classList.add("active");
+            }
         });
     }
 
     // --- LÓGICA DO SIMULADOR DE APOSENTADORIA ---
     const retirementForm = document.getElementById('retirement-form');
     if (retirementForm) {
-        let retirementChart = null; // Renomeado para evitar conflito
+        let retirementChart = null;
         const resultsContainer = document.getElementById('retirement-results');
 
         retirementForm.addEventListener('submit', async function(event) {
@@ -75,14 +91,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
                 
-                const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById('pessimista-value').textContent = formatCurrency(results.pessimista);
                 document.getElementById('mediano-value').textContent = formatCurrency(results.mediano);
                 document.getElementById('otimista-value').textContent = formatCurrency(results.otimista);
                 document.getElementById('heranca-value').textContent = formatCurrency(results.patrimonioFinalMediano);
                 
                 const ctx = document.getElementById('retirement-chart-canvas').getContext('2d');
-                if(retirementChart) retirementChart.destroy();
+                if (retirementChart) retirementChart.destroy();
                 retirementChart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -104,8 +119,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- LÓGICA DO COMPARADOR DE CENÁRIOS ---
     const comparisonForm = document.getElementById('comparison-form');
-    if(comparisonForm) {
+    if (comparisonForm) {
         let comparisonChart = null;
+        const summaryContainer = document.getElementById('comparison-summary');
+        
         comparisonForm.addEventListener('submit', async function(event) {
             event.preventDefault();
             const submitButton = comparisonForm.querySelector('button[type="submit"]');
@@ -136,9 +153,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('comparison-results').classList.remove('hidden');
                 
                 const ctx = document.getElementById('comparison-chart').getContext('2d');
-                if(comparisonChart) comparisonChart.destroy();
+                if (comparisonChart) comparisonChart.destroy();
 
-                const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 comparisonChart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -149,14 +165,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             { label: 'Patrimônio com Consórcio (Mediano)', data: results.consorcio, borderColor: 'rgb(40, 167, 69)', borderDash: [5, 5], tension: 0.1 }
                         ]
                     },
-                     options: {
+                    options: {
                         responsive: true, maintainAspectRatio: false,
                         plugins: { tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${formatCurrency(c.parsed.y)}` } } },
                         scales: { y: { ticks: { callback: (v) => formatCurrency(v).replace(/\s/g, '') } } }
                     }
                 });
 
-                const summaryContainer = document.getElementById('comparison-summary');
                 const resumo = results.resumo;
                 summaryContainer.innerHTML = `
                     <div class="scenario-card"><h4>Financiamento</h4><p>Patrimônio Final:</p><strong class="result-value">${formatCurrency(resumo.financiamento)}</strong></div>
@@ -166,7 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 summaryContainer.classList.remove('hidden');
 
             } catch (error) {
-                alert("Erro ao comparar cenários: " + error.message);
+                // Tratamento de erro consistente com o outro simulador
+                summaryContainer.innerHTML = `<p style="color:red; text-align:center;">Erro ao comparar: ${error.message}</p>`;
+                summaryContainer.classList.remove('hidden');
             } finally {
                 submitButton.textContent = 'Comparar Cenários';
                 submitButton.disabled = false;
