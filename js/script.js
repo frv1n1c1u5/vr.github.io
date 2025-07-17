@@ -20,10 +20,59 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Erro ao ativar link de navegação:", e);
     }
 
-    // --- LÓGICA DA PÁGINA 'CLIENTES': Simulador com Gráfico e PDF ---
+    // --- LÓGICA DA PÁGINA 'CLIENTES': Simulador com Visão Nominal/Real ---
     const retirementForm = document.getElementById('retirement-form');
     if (retirementForm) {
         let projectionChart = null; 
+        let latestSimulationData = null; 
+        let currentView = 'nominal'; 
+
+        const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        function updateView(viewType) {
+            if (!latestSimulationData) return;
+            currentView = viewType;
+            const data = latestSimulationData;
+            const inflationRate = parseFloat(document.getElementById('annual-inflation').value) / 100;
+            
+            document.getElementById('btn-nominal').classList.toggle('active', viewType === 'nominal');
+            document.getElementById('btn-real').classList.toggle('active', viewType === 'real');
+
+            let valPessimista = data.pessimista;
+            let valMediano = data.mediano;
+            let valOtimista = data.otimista;
+            let valHeranca = data.patrimonioFinalMediano;
+            const anosAcumulando = parseInt(document.getElementById('retirement-age').value) - parseInt(document.getElementById('current-age').value);
+
+            if (viewType === 'real') {
+                valPessimista = data.pessimista / Math.pow(1 + inflationRate, anosAcumulando);
+                valMediano = data.mediano / Math.pow(1 + inflationRate, anosAcumulando);
+                valOtimista = data.otimista / Math.pow(1 + inflationRate, anosAcumulando);
+                const totalAnos = parseInt(document.getElementById('life-expectancy').value) - parseInt(document.getElementById('current-age').value);
+                valHeranca = data.patrimonioFinalMediano / Math.pow(1 + inflationRate, totalAnos);
+            }
+
+            document.getElementById('pessimista-value').textContent = formatCurrency(valPessimista);
+            document.getElementById('mediano-value').textContent = formatCurrency(valMediano);
+            document.getElementById('otimista-value').textContent = formatCurrency(valOtimista);
+            document.getElementById('heranca-value').textContent = formatCurrency(valHeranca);
+
+            const chartData = {
+                pessimista: viewType === 'real' ? data.graficoPessimista.map((v, i) => v / Math.pow(1 + inflationRate, i)) : data.graficoPessimista,
+                mediano: viewType === 'real' ? data.graficoMediano.map((v, i) => v / Math.pow(1 + inflationRate, i)) : data.graficoMediano,
+                otimista: viewType === 'real' ? data.graficoOtimista.map((v, i) => v / Math.pow(1 + inflationRate, i)) : data.graficoOtimista,
+            };
+            
+            projectionChart.data.datasets[0].data = chartData.otimista;
+            projectionChart.data.datasets[1].data = chartData.mediano;
+            projectionChart.data.datasets[2].data = chartData.pessimista;
+            projectionChart.options.plugins.tooltip.callbacks.label = (c) => `Patrimônio (${viewType}): ${formatCurrency(c.parsed.y)}`;
+            projectionChart.options.scales.y.ticks.callback = (v) => formatCurrency(v).replace(/\s/g, '');
+            projectionChart.update();
+        }
+
+        document.getElementById('btn-nominal').addEventListener('click', () => updateView('nominal'));
+        document.getElementById('btn-real').addEventListener('click', () => updateView('real'));
 
         retirementForm.addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -51,60 +100,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 const results = await response.json();
                 if (!response.ok) { throw new Error(results.erro || 'Erro no servidor'); }
 
+                latestSimulationData = results; 
+
                 document.getElementById('result-section').classList.remove('hidden');
                 document.getElementById('download-pdf').classList.remove('hidden');
-
-                const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.getElementById('pessimista-value').textContent = formatCurrency(results.pessimista);
-                document.getElementById('mediano-value').textContent = formatCurrency(results.mediano);
-                document.getElementById('otimista-value').textContent = formatCurrency(results.otimista);
-
+                
                 if (results.analiseIA) {
                     document.getElementById('ai-text').innerHTML = results.analiseIA.replace(/\n/g, '<br>');
                     document.getElementById('ai-analysis').classList.remove('hidden');
                 }
 
-                const ctx = document.getElementById('projection-chart').getContext('2d');
-                if (projectionChart) {
-                    projectionChart.destroy();
+                if (!projectionChart) {
+                    const ctx = document.getElementById('projection-chart').getContext('2d');
+                    projectionChart = new Chart(ctx, {
+                        type: 'line', data: { labels: results.graficoLabels, datasets: [ { label: 'Cenário Otimista (90%)', data: [], borderColor: 'rgba(40, 167, 69, 0.3)', pointRadius: 0, borderWidth: 1 }, { label: 'Projeção Mediana (50%)', data: [], borderColor: 'rgb(10, 66, 117)', backgroundColor: 'rgba(10, 66, 117, 0.1)', fill: '-1', tension: 0.2, pointRadius: 1, borderWidth: 2 }, { label: 'Cenário Pessimista (10%)', data: [], borderColor: 'rgba(220, 53, 69, 0.3)', backgroundColor: 'rgba(10, 66, 117, 0.1)', fill: '-1', pointRadius: 0, borderWidth: 1 }] },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
                 }
-                projectionChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: results.graficoLabels,
-                        datasets: [
-                        {
-                            label: 'Cenário Otimista (90%)',
-                            data: results.graficoOtimista,
-                            borderColor: 'rgba(40, 167, 69, 0.3)',
-                            pointRadius: 0,
-                            borderWidth: 1,
-                        }, {
-                            label: 'Projeção Mediana (50%)',
-                            data: results.graficoMediano,
-                            borderColor: 'rgb(10, 66, 117)',
-                            backgroundColor: 'rgba(10, 66, 117, 0.1)',
-                            fill: '-1', // Preenche até a linha anterior (Otimista)
-                            tension: 0.2,
-                            pointRadius: 1,
-                            borderWidth: 2,
-                        }, {
-                            label: 'Cenário Pessimista (10%)',
-                            data: results.graficoPessimista,
-                            borderColor: 'rgba(220, 53, 69, 0.3)',
-                            backgroundColor: 'rgba(10, 66, 117, 0.1)',
-                            fill: '-1', // Preenche até a linha anterior (Mediana)
-                            pointRadius: 0,
-                            borderWidth: 1,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { tooltip: { callbacks: { label: (c) => `Patrimônio: ${formatCurrency(c.parsed.y)}` } } },
-                        scales: { y: { ticks: { callback: (v) => formatCurrency(v).replace(/\s/g, '') } } }
-                    }
-                });
+                
+                updateView('nominal');
 
             } catch (error) {
                 console.error("Erro ao simular:", error);
@@ -117,24 +131,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.getElementById('download-pdf').addEventListener('click', function() {
             const reportElement = document.getElementById('report-container');
-            const options = {
-                margin:       [0.5, 0.5, 0.5, 0.5],
-                filename:     'relatorio_simulacao_aposentadoria.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(options).from(reportElement).save();
+            const titleElement = reportElement.querySelector('h3');
+            const originalTitle = titleElement.textContent;
+            titleElement.textContent = `Análise de Cenários (${currentView === 'nominal' ? 'Valores Nominais' : 'Poder de Compra Real'})`;
+
+            const options = { margin: [0.5, 0.5, 0.5, 0.5], filename: `relatorio_aposentadoria_${currentView}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+            html2pdf().set(options).from(reportElement).save().then(() => {
+                titleElement.textContent = originalTitle;
+            });
         });
     }
 
-    // --- LÓGICA DA PÁGINA 'INDICADORES' ---
+    // --- LÓGICA DA PÁGINA 'INDICADORES' (se precisar no futuro) ---
     if (document.getElementById('indicators-container')) {
-        // ... (código dos indicadores continua o mesmo) ...
+        // ... (código dos indicadores aqui) ...
     }
     
-    // --- LÓGICA DA PÁGINA 'TRADUTOR FINANCEIRO' ---
+    // --- LÓGICA DA PÁGINA 'TRADUTOR FINANCEIRO' (se precisar no futuro) ---
     if (document.getElementById('translate-btn')) {
-        // ... (código do tradutor continua o mesmo) ...
+        // ... (código do tradutor aqui) ...
     }
 });
