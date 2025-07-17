@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ferramentas para Clientes | Vinicius Rocha</title>
-    <meta name="description" content="Utilize a calculadora de planejamento de aposentadoria e outras ferramentas para tomar as melhores decisões para o seu futuro financeiro.">
+    <title>Simulador de Aposentadoria | Vinicius Rocha</title>
+    <meta name="description" content="Simule cenários de aposentadoria com a ferramenta avançada de projeção de patrimônio e análise de risco.">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,48 +34,65 @@
     <main>
         <section class="content-page">
             <div class="container">
-                <h2>Ferramenta de Planejamento de Aposentadoria</h2>
+                <h2>Simulador de Cenários de Aposentadoria</h2>
+                <p class="page-intro">Preencha os campos abaixo para rodar uma simulação de Monte Carlo e entender as probabilidades e cenários para o seu futuro financeiro.</p>
+                
                 <div class="calculator-container">
                     <form id="retirement-form">
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="current-age">Idade atual</label>
-                                <input type="number" id="current-age" required>
+                                <input type="number" id="current-age" value="30" required>
                             </div>
                             <div class="form-group">
                                 <label for="retirement-age">Idade para aposentadoria</label>
-                                <input type="number" id="retirement-age" required>
+                                <input type="number" id="retirement-age" value="60" required>
                             </div>
                             <div class="form-group">
                                 <label for="current-patrimony">Patrimônio atual (R$)</label>
-                                <input type="number" id="current-patrimony" required>
+                                <input type="number" id="current-patrimony" value="50000" required>
                             </div>
                             <div class="form-group">
                                 <label for="monthly-contribution">Aporte mensal (R$)</label>
-                                <input type="number" id="monthly-contribution" required>
+                                <input type="number" id="monthly-contribution" value="1000" required>
                             </div>
                             <div class="form-group">
                                 <label for="annual-return">Rentabilidade média anual (%)</label>
-                                <input type="number" id="annual-return" step="0.1" required>
+                                <input type="number" id="annual-return" step="0.1" value="8.0" required>
                             </div>
                             <div class="form-group">
                                 <label for="annual-inflation">Inflação anual esperada (%)</label>
                                 <input type="number" id="annual-inflation" step="0.1" value="4.0">
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Simular</button>
+                        <button type="submit" class="btn btn-primary">Analisar Cenários</button>
                     </form>
 
                     <div id="result-section" class="hidden">
-                        <div id="result-content">
-                            <h3>Resultado da Simulação</h3>
-                            <p>Patrimônio bruto acumulado aos <strong id="result-age"></strong> anos:</p>
-                            <p class="result-value" id="future-value"></p>
-                            
-                            <p>Considerando a inflação, seu poder de compra será equivalente a:</p>
-                            <p class="result-value" id="future-value-adjusted"></p>
+                        <h3>Análise de Cenários</h3>
+                        
+                        <div class="scenarios-grid">
+                            <div class="scenario-card">
+                                <h4>Cenário Pessimista</h4>
+                                <p>10% de chance de ser menor que:</p>
+                                <strong id="pessimista-value" class="result-value negative"></strong>
+                            </div>
+                            <div class="scenario-card">
+                                <h4>Cenário Mediano</h4>
+                                <p>Valor mais provável:</p>
+                                <strong id="mediano-value" class="result-value"></strong>
+                            </div>
+                            <div class="scenario-card">
+                                <h4>Cenário Otimista</h4>
+                                <p>10% de chance de ser maior que:</p>
+                                <strong id="otimista-value" class="result-value positive"></strong>
+                            </div>
                         </div>
-                        <button id="download-pdf" class="btn">Baixar Resultado em PDF</button>
+
+                        <div id="ai-analysis" class="hidden">
+                            <h4>Análise Inteligente</h4>
+                            <p id="ai-text"></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -87,9 +104,7 @@
             <p>&copy; 2025 Vinicius Rocha | Todos os direitos reservados.</p>
         </div>
     </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <script src="js/script.js"></script>
-
 </body>
 </html>
