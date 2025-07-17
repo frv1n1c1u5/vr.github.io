@@ -27,7 +27,7 @@ body { font-family: var(--body-font); background-color: var(--white-color); colo
 nav ul { list-style: none; display: flex; gap: 20px; align-items: center; }
 nav a { text-decoration: none; color: var(--dark-gray); font-weight: 700; font-size: 1rem; transition: color 0.3s ease; padding-bottom: 5px; border-bottom: 2px solid transparent; }
 nav a:hover, nav a.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
-.menu-button a { background-color: var(--primary-color); color: var(--white-color); padding: 10px 20px; border-radius: 5px; font-weight: 700; transition: background-color 0.3s ease, transform 0.2s ease; border-bottom: none !important; }
+.menu-button a { background-color: var(--primary-color); color: var(--white-color); padding: 10px 20px; border-radius: 5px; font-weight: 700; transition: all 0.3s ease; border-bottom: none !important; }
 .menu-button a:hover { color: var(--white-color); transform: translateY(-2px); opacity: 0.9; }
 
 /* --- Estrutura Geral e Conteúdo --- */
@@ -40,7 +40,7 @@ h4 { font-size: 1.2rem; color: var(--dark-gray); }
 p { margin-bottom: 1rem; max-width: 700px; }
 .page-intro { text-align: center; max-width: 600px; margin: 0 auto 3rem auto; font-size: 1.1rem; color: var(--medium-gray); }
 .content-page .container { max-width: 800px; }
-.hidden { display: none; }
+.hidden { display: none !important; }
 
 /* --- Página 'Para Clientes' (Simulador) --- */
 .calculator-container { background: var(--light-gray); padding: 2.5rem; border-radius: 8px; }
@@ -66,12 +66,16 @@ p { margin-bottom: 1rem; max-width: 700px; }
 .scenario-card strong { font-size: 1.8rem; }
 #ai-analysis { margin-top: 2rem; padding: 2rem; background: var(--secondary-color); border-left: 5px solid var(--primary-color); border-radius: 5px; }
 #ai-analysis h4 { margin-top: 0; }
+#suggestion-card { margin-top: 2rem; padding: 2rem; background: #fff; border: 2px dashed var(--primary-color); border-radius: 8px; text-align: center; }
+#suggestion-card h4 { margin-top: 0; }
+#suggestion-card p { max-width: 100%; margin-bottom: 0.5rem; }
+#suggestion-card strong { font-size: 2rem; color: var(--primary-color); }
 .result-value { color: var(--dark-gray); }
 .result-value.positive { color: var(--positive-color); }
 .result-value.negative { color: var(--negative-color); }
 
-/* --- Outras Páginas (Indicadores, etc) --- */
-/* ... (outros estilos que já criamos) ... */
+/* --- Outras Páginas (Indicadores, etc.) --- */
+/* ... (todos os outros estilos que já criamos) ... */
 
 /* --- Rodapé --- */
 footer { background-color: var(--dark-gray); color: var(--light-gray); text-align: center; padding: 1.5rem 0; margin-top: 4rem; }
