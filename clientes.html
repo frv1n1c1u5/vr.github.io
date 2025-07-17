@@ -67,7 +67,7 @@
                                 <input type="number" id="annual-inflation" step="0.1" value="4.0" required>
                             </div>
                             <div class="form-group">
-                                <label for="post-retirement-cost">Custo de vida mensal (R$)</label>
+                                <label for="post-retirement-cost">Custo de vida mensal desejado (R$)</label>
                                 <input type="number" id="post-retirement-cost" value="5000" required>
                             </div>
                             <div class="form-group">
@@ -115,9 +115,20 @@
                             </div>
 
                             <div id="suggestion-card" class="hidden">
-                                <h4>Sugestão para um Plano Sustentável</h4>
-                                <p>Para que seu patrimônio dure até o fim da sua expectativa de vida, seu custo de vida mensal ao se aposentar (em valores de hoje) deveria ser de aproximadamente:</p>
-                                <strong id="sugestao-retirada" class="result-value"></strong>
+                                <h4>Sugestões de Custo de Vida (Pós-Aposentadoria)</h4>
+                                <p>Valores mensais sugeridos (em dinheiro de hoje) com base no seu cenário mediano:</p>
+                                <div class="suggestion-grid">
+                                    <div class="suggestion-item">
+                                        <h5>Para PRESERVAR o Patrimônio</h5>
+                                        <span>(Viver dos juros e deixar herança máxima)</span>
+                                        <strong id="sugestao-preservacao" class="result-value"></strong>
+                                    </div>
+                                    <div class="suggestion-item">
+                                        <h5>Para USAR o Patrimônio</h5>
+                                        <span>(Retirada máxima até o fim da vida)</span>
+                                        <strong id="sugestao-maxima" class="result-value"></strong>
+                                    </div>
+                                </div>
                             </div>
 
                             <div id="ai-analysis" class="hidden">
