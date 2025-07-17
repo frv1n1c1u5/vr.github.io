@@ -40,7 +40,6 @@
                 
                 <div class="calculator-container">
                     <form id="retirement-form">
-                        
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="current-age">Idade atual</label>
@@ -52,7 +51,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="current-patrimony">Patrimônio atual (R$)</label>
-                                <input type="number" id="current-patrimony" value="50000" required>
+                                <input type="number" id="current-patrimony" value="100000" required>
                             </div>
                             <div class="form-group">
                                 <label for="monthly-contribution">Aporte mensal (R$)</label>
@@ -60,11 +59,19 @@
                             </div>
                             <div class="form-group">
                                 <label for="annual-return">Rentabilidade média anual (%)</label>
-                                <input type="number" id="annual-return" step="0.1" value="8.0" required>
+                                <input type="number" id="annual-return" step="0.1" value="9.0" required>
                             </div>
                             <div class="form-group">
                                 <label for="annual-inflation">Inflação anual esperada (%)</label>
-                                <input type="number" id="annual-inflation" step="0.1" value="4.0">
+                                <input type="number" id="annual-inflation" step="0.1" value="4.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="post-retirement-cost">Custo de vida mensal (R$)</label>
+                                <input type="number" id="post-retirement-cost" value="5000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="life-expectancy">Expectativa de vida (anos)</label>
+                                <input type="number" id="life-expectancy" value="85" required>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Analisar Cenários</button>
