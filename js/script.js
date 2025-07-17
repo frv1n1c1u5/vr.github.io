@@ -1,5 +1,5 @@
 /* /js/script.js */
-// VERSÃO COMPLETA E FINAL COM TODAS AS FUNCIONALIDADES
+// VERSÃO COMPLETA E FINAL COM TODAS AS FUNCIONALIDADES - VERIFICADO
 
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -20,14 +20,17 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Erro ao ativar link de navegação:", e);
     }
 
-    // --- LÓGICA DA PÁGINA 'CLIENTES': Simulador com Visão Nominal/Real ---
+    // --- LÓGICA DA PÁGINA 'CLIENTES': Simulador com Gráfico e Anotação ---
     const retirementForm = document.getElementById('retirement-form');
     if (retirementForm) {
+        // Registra os plugins do Chart.js que vamos usar
+        Chart.register(window.ChartjsPluginAnnotation);
+
         let projectionChart = null; 
         let latestSimulationData = null; 
         let currentView = 'nominal'; 
 
-        const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const formatCurrency = (value) => (typeof value === 'number') ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
 
         function updateView(viewType) {
             if (!latestSimulationData) return;
@@ -38,10 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('btn-nominal').classList.toggle('active', viewType === 'nominal');
             document.getElementById('btn-real').classList.toggle('active', viewType === 'real');
 
-            let valPessimista = data.pessimista;
-            let valMediano = data.mediano;
-            let valOtimista = data.otimista;
-            let valHeranca = data.patrimonioFinalMediano;
+            let valPessimista = data.pessimista, valMediano = data.mediano, valOtimista = data.otimista, valHeranca = data.patrimonioFinalMediano;
             const anosAcumulando = parseInt(document.getElementById('retirement-age').value) - parseInt(document.getElementById('current-age').value);
 
             if (viewType === 'real') {
@@ -68,8 +68,9 @@ document.addEventListener('DOMContentLoaded', function() {
             projectionChart.data.datasets[0].data = chartData.otimista;
             projectionChart.data.datasets[1].data = chartData.mediano;
             projectionChart.data.datasets[2].data = chartData.pessimista;
+            projectionChart.options.plugins.annotation.annotations.retirementLine.xMin = String(data.anoAposentadoria);
+            projectionChart.options.plugins.annotation.annotations.retirementLine.xMax = String(data.anoAposentadoria);
             projectionChart.options.plugins.tooltip.callbacks.label = (c) => `Patrimônio (${viewType}): ${formatCurrency(c.parsed.y)}`;
-            projectionChart.options.scales.y.ticks.callback = (v) => formatCurrency(v).replace(/\s/g, '');
             projectionChart.update();
         }
 
@@ -97,15 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const results = await response.json();
                 if (!response.ok) { throw new Error(results.erro || 'Erro no servidor'); }
                 latestSimulationData = results; 
-                document.getElementById('result-section').classList.remove('hidden');
-                document.getElementById('download-pdf').classList.remove('hidden');
-                if (results.analiseIA) {
-                    document.getElementById('ai-text').innerHTML = results.analiseIA.replace(/\n/g, '<br>');
-                    document.getElementById('ai-analysis').classList.remove('hidden');
-                }
-                if (results.retiradaMaxima) {
-                    document.getElementById('suggestion-card').classList.remove('hidden');
-                }
+
                 if (!projectionChart) {
                     const ctx = document.getElementById('projection-chart').getContext('2d');
                     projectionChart = new Chart(ctx, {
@@ -129,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     annotations: {
                                         retirementLine: {
                                             type: 'line',
-                                            xMin: 1900, xMax: 1900,
+                                            xMin: "1900", xMax: "1900", // Valor inicial, será atualizado
                                             borderColor: 'rgba(220, 53, 69, 0.7)',
                                             borderWidth: 2,
                                             borderDash: [6, 6],
@@ -141,7 +134,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                 }
+                
+                document.getElementById('result-section').classList.remove('hidden');
+                document.getElementById('download-pdf').classList.remove('hidden');
+                if (results.analiseIA) {
+                    document.getElementById('ai-text').innerHTML = results.analiseIA.replace(/\n/g, '<br>');
+                    document.getElementById('ai-analysis').classList.remove('hidden');
+                }
+                if (results.retiradaMaxima) {
+                    document.getElementById('suggestion-card').classList.remove('hidden');
+                }
+                
                 updateView('nominal');
+
             } catch (error) {
                 console.error("Erro ao simular:", error);
                 alert("Não foi possível realizar a simulação. Tente novamente mais tarde.");
@@ -226,16 +231,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) { console.error('Erro ao buscar dados da Alpha Vantage:', error); }
         }
         
-        async function fetchHistoricalData() {
-            // Chamadas para histórico podem ser otimizadas ou feitas sob demanda no futuro para não gastar a chave da API
-            updateText('dolar-min-max-12m', 'N/A');
-            updateText('ibov-ano', 'N/A');
-            updateText('ibov-12m', 'N/A');
-        }
+        // Chamadas de histórico foram removidas da carga inicial para performance
+        // Podem ser adicionadas a um botão "Ver detalhes" no futuro
+        updateText('dolar-min-max-12m', '-');
+        updateText('ibov-ano', '-');
+        updateText('ibov-12m', '-');
 
         fetchBCBMacroData();
         fetchMarketData();
-        fetchHistoricalData();
     }
     
     // --- LÓGICA DA PÁGINA 'TRADUTOR FINANCEIRO' ---
