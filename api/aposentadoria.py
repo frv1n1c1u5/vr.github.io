@@ -1,5 +1,4 @@
-# Arquivo: /api/aposentadoria.py
-# VERSÃO COM CORREÇÃO NA LÓGICA DE INFLAÇÃO PÓS-APOSENTADORIA
+# Substitua o conteúdo de /api/aposentadoria.py por este código
 
 import os
 from flask import Flask, request, jsonify
@@ -9,7 +8,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Configuração da API do Gemini
+# ... (código de configuração da API Gemini - sem alterações) ...
 try:
     GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
     if GOOGLE_API_KEY:
@@ -18,13 +17,13 @@ except Exception as e:
     print(f"Erro ao configurar a API do Gemini: {e}")
     GOOGLE_API_KEY = None
 
+
 @app.route('/api/aposentadoria', methods=['POST'])
 def simular_aposentadoria():
     try:
         dados = request.get_json()
-        if not dados:
-            return jsonify({'erro': 'Corpo da requisição está vazio.'}), 400
         
+        # Parâmetros de entrada
         idade_atual = int(dados['idadeAtual'])
         idade_aposentadoria = int(dados['idadeAposentadoria'])
         expectativa_vida = int(dados['expectativaVida'])
@@ -54,16 +53,12 @@ def simular_aposentadoria():
                 patrimonio_ano_a_ano = patrimonio_ano_a_ano * (1 + retorno) + (aporte_mensal * 12)
                 trajetorias[i, ano_a + 1] = patrimonio_ano_a_ano
         
-        # Fase de Gastos (Drawdown)
+        # Fase de Gastos (Drawdown) com custo de vida corrigido
         for i in range(num_simulacoes):
             for ano_g in range(anos_gastando):
                 retorno_conservador = np.random.normal(retorno_medio_anual / 2, volatilidade_anual / 2)
                 patrimonio_anterior = trajetorias[i, anos_acumulando + ano_g]
-                
-                # CORREÇÃO: O custo de vida deve ser corrigido pelo total de anos desde hoje.
-                anos_desde_inicio = anos_acumulando + ano_g
-                custo_vida_anual_corrigido = (custo_vida_mensal_hoje * 12) * ((1 + inflacao_media_anual) ** anos_desde_inicio)
-                
+                custo_vida_anual_corrigido = (custo_vida_mensal_hoje * 12) * ((1 + inflacao_media_anual) ** (anos_acumulando + ano_g))
                 patrimonio_com_juros = patrimonio_anterior * (1 + retorno_conservador)
                 patrimonio_apos_saque = patrimonio_com_juros - custo_vida_anual_corrigido
                 trajetorias[i, anos_acumulando + ano_g + 1] = max(0, patrimonio_apos_saque)
@@ -71,14 +66,14 @@ def simular_aposentadoria():
         patrimonio_na_aposentadoria = trajetorias[:, anos_acumulando]
         cenario_mediano = np.percentile(patrimonio_na_aposentadoria, 50)
         
-        # --- CÁLCULOS DAS SUGESTÕES ---
         retorno_real_conservador = ((1 + (retorno_medio_anual / 2)) / (1 + inflacao_media_anual)) - 1
         
-        retirada_preservacao_mensal = (cenario_mediano * retorno_real_conservador) / 12 if retorno_real_conservador > 0 else 0
-        
+        taxa_de_saque_segura = max(0, retorno_real_conservador - 0.015)
+        retirada_preservacao_mensal = (cenario_mediano * taxa_de_saque_segura) / 12
+
         retirada_maxima_mensal = 0
-        if retorno_real_conservador > 0 and anos_gastando > 0:
-            fator_anuidade = (retorno_real_conservador * (1 + retorno_real_conservador) ** anos_gastando) / (((1 + retorno_real_conservador) ** anos_gastando) - 1)
+        if taxa_de_saque_segura > 0 and anos_gastando > 0:
+            fator_anuidade = (taxa_de_saque_segura * (1 + taxa_de_saque_segura) ** anos_gastando) / (((1 + taxa_de_saque_segura) ** anos_gastando) - 1)
             retirada_maxima_anual = cenario_mediano * fator_anuidade
             retirada_maxima_mensal = retirada_maxima_anual / 12
         elif anos_gastando > 0:
@@ -87,9 +82,6 @@ def simular_aposentadoria():
         analise_ia = "Análise da IA não disponível. Verifique a chave de API no painel da Vercel."
         # ... (código da IA) ...
 
-        ano_corrente = datetime.now().year
-        ano_da_aposentadoria = ano_corrente + anos_acumulando
-
         return jsonify({
             'pessimista': np.percentile(patrimonio_na_aposentadoria, 10),
             'mediano': cenario_mediano,
@@ -97,8 +89,7 @@ def simular_aposentadoria():
             'patrimonioFinalMediano': np.percentile(trajetorias[:, -1], 50),
             'retiradaPreservacao': retirada_preservacao_mensal,
             'retiradaMaxima': retirada_maxima_mensal,
-            'anoAposentadoria': ano_da_aposentadoria,
-            'graficoLabels': [str(ano_corrente + i) for i in range(total_anos + 1)],
+            'graficoLabels': [str(datetime.now().year + i) for i in range(total_anos + 1)],
             'graficoPessimista': list(np.percentile(trajetorias, 10, axis=0)),
             'graficoMediano': list(np.percentile(trajetorias, 50, axis=0)),
             'graficoOtimista': list(np.percentile(trajetorias, 90, axis=0)),
