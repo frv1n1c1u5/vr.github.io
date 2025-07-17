@@ -1,44 +1,52 @@
 # Arquivo: /api/aposentadoria.py
+# VERSÃO FINAL E ROBUSTA
 
 import os
 from flask import Flask, request, jsonify
 import numpy as np
 import google.generativeai as genai
-from datetime import datetime
 
 app = Flask(__name__)
 
-# Configuração da API do Gemini - Pega a chave que você configurou na Vercel
-GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
-if GOOGLE_API_KEY:
-    genai.configure(api_key=GOOGLE_API_KEY)
+# Configuração da API do Gemini
+try:
+    GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
+    if GOOGLE_API_KEY:
+        genai.configure(api_key=GOOGLE_API_KEY)
+except Exception as e:
+    print(f"Erro ao configurar a API do Gemini: {e}")
+    GOOGLE_API_KEY = None # Garante que a variável existe mesmo com erro
 
-# A rota /api/aposentadoria é definida pelo nome do arquivo
+# Rota principal para verificar se a API está no ar
+@app.route('/api/aposentadoria', methods=['GET'])
+def health_check():
+    return jsonify({"status": "API do simulador está no ar!"})
+
+# Rota para receber os dados e fazer a simulação
 @app.route('/api/aposentadoria', methods=['POST'])
 def simular_aposentadoria():
+    print(">>> Função simular_aposentadoria foi chamada.") # Log para vermos no Vercel
     try:
         dados = request.get_json()
+        if not dados:
+            print("Erro: Nenhum dado JSON recebido.")
+            return jsonify({'erro': 'Corpo da requisição está vazio ou não é JSON.'}), 400
         
-        # Parâmetros de entrada vindos do formulário do site
         idade_atual = int(dados['idadeAtual'])
         idade_aposentadoria = int(dados['idadeAposentadoria'])
         patrimonio_inicial = float(dados['patrimonioAtual'])
         aporte_mensal = float(dados['aporteMensal'])
         retorno_medio_anual = float(dados['rentabilidadeAnual']) / 100
-        inflacao_anual = float(dados['inflacaoAnual']) / 100
         
-        # Parâmetros da simulação
-        volatilidade_anual = 0.15  # Volatilidade de 15% a.a. (padrão de mercado de ações)
-        num_simulacoes = 500      # Número de cenários a simular
-
+        volatilidade_anual = 0.15
+        num_simulacoes = 500
         anos_investindo = idade_aposentadoria - idade_atual
+
         if anos_investindo <= 0:
             return jsonify({'erro': 'A idade de aposentadoria deve ser maior que a idade atual.'}), 400
 
-        # Array para guardar os resultados de todas as simulações
         resultados_finais = np.zeros(num_simulacoes)
 
-        # Loop da Simulação de Monte Carlo
         for i in range(num_simulacoes):
             patrimonio_anual = patrimonio_inicial
             for _ in range(anos_investindo):
@@ -46,12 +54,10 @@ def simular_aposentadoria():
                 patrimonio_anual = patrimonio_anual * (1 + retorno_aleatorio) + (aporte_mensal * 12)
             resultados_finais[i] = patrimonio_anual
         
-        # Calcula os percentis para definir os cenários
         cenario_pessimista = np.percentile(resultados_finais, 10)
         cenario_mediano = np.percentile(resultados_finais, 50)
         cenario_otimista = np.percentile(resultados_finais, 90)
 
-        # --- PARTE DA IA PARA GERAR A ANÁLISE ---
         analise_ia = "Análise da IA não disponível no momento."
         if GOOGLE_API_KEY and genai:
             prompt = f"""Aja como um planejador financeiro. Uma simulação de Monte Carlo para aposentadoria resultou nos seguintes valores de patrimônio bruto:
@@ -63,8 +69,8 @@ def simular_aposentadoria():
             model = genai.GenerativeModel('gemini-1.5-flash')
             response = model.generate_content(prompt)
             analise_ia = response.text
-
-        # Retorna todos os dados para o site
+        
+        print(">>> Simulação concluída com sucesso.")
         return jsonify({
             'pessimista': cenario_pessimista,
             'mediano': cenario_mediano,
@@ -73,5 +79,5 @@ def simular_aposentadoria():
         })
 
     except Exception as e:
-        # Em caso de erro, retorna uma mensagem clara
-        return jsonify({'erro': str(e)}), 500
+        print(f"!!! ERRO INESPERADO NA FUNÇÃO: {e}")
+        return jsonify({'erro': f'Ocorreu um erro interno no servidor: {e}'}), 500
