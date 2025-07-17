@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Aposentadoria | Vinicius Rocha</title>
-    <meta name="description" content="Simule cenários de aposentadoria com a ferramenta avançada de projeção de patrimônio e análise de risco.">
-    
+    <title>Ferramentas para Clientes | Vinicius Rocha</title>
+    <meta name="description" content="Simuladores e ferramentas financeiras para ajudar no seu planejamento: Aposentadoria, Financiamento vs Aluguel e mais.">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,103 +36,47 @@
     <main>
         <section class="content-page">
             <div class="container">
-                <h2>Simulador de Cenários de Aposentadoria</h2>
-                <p class="page-intro">Preencha os campos abaixo para rodar uma simulação de Monte Carlo e entender as probabilidades e cenários para o seu futuro financeiro.</p>
                 
-                <div class="calculator-container">
-                    <form id="retirement-form">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="current-age">Idade atual</label>
-                                <input type="number" id="current-age" value="30" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="retirement-age">Idade para aposentadoria</label>
-                                <input type="number" id="retirement-age" value="60" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="current-patrimony">Patrimônio atual (R$)</label>
-                                <input type="number" id="current-patrimony" value="100000" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="monthly-contribution">Aporte mensal (R$)</label>
-                                <input type="number" id="monthly-contribution" value="1000" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="annual-return">Rentabilidade média anual (%)</label>
-                                <input type="number" id="annual-return" step="0.1" value="9.0" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="annual-inflation">Inflação anual esperada (%)</label>
-                                <input type="number" id="annual-inflation" step="0.1" value="4.0" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="post-retirement-cost">Custo de vida mensal desejado (R$)</label>
-                                <input type="number" id="post-retirement-cost" value="5000" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="life-expectancy">Expectativa de vida (anos)</label>
-                                <input type="number" id="life-expectancy" value="85" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Analisar Cenários</button>
-                    </form>
+                <div class="tool-tabs">
+                    <button class="tab-link active" data-tab="tab-aposentadoria">Simulador de Aposentadoria</button>
+                    <button class="tab-link" data-tab="tab-comparador">Financiamento x Aluguel</button>
+                </div>
+
+                <div class="tool-content">
                     
-                    <div id="report-container">
-                        <div id="result-section" class="hidden">
-                            <h3>Análise de Cenários</h3>
-                            <div class="view-toggle">
-                                <button id="btn-nominal" class="toggle-btn active">Ver Valores Nominais</button>
-                                <button id="btn-real" class="toggle-btn">Ver Poder de Compra (Real)</button>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="projection-chart"></canvas>
-                            </div>
-                            <div class="scenarios-grid">
-                                <div class="scenario-card">
-                                    <h4>Cenário Pessimista</h4>
-                                    <p>Patrimônio ao se aposentar:</p>
-                                    <strong id="pessimista-value" class="result-value negative"></strong>
+                    <div id="tab-aposentadoria" class="tab-pane active">
+                        <h2>Simulador de Cenários de Aposentadoria</h2>
+                        <p class="page-intro">Preencha os campos abaixo para rodar uma simulação de Monte Carlo e entender as probabilidades e cenários para o seu futuro financeiro.</p>
+                        <div class="calculator-container">
+                             </div>
+                    </div>
+
+                    <div id="tab-comparador" class="tab-pane">
+                        <h2>Financiamento vs. Aluguel vs. Consórcio</h2>
+                        <p class="page-intro">Descubra qual caminho faz mais sentido para seus objetivos, analisando a evolução do seu patrimônio em cada cenário.</p>
+                        <div class="calculator-container">
+                            <form id="comparison-form">
+                                <div class="form-grid">
+                                    <div class="form-group"> <label>Valor do Imóvel (R$)</label> <input type="number" id="comp-valor-imovel" value="500000"> </div>
+                                    <div class="form-group"> <label>Valor da Entrada (R$)</label> <input type="number" id="comp-valor-entrada" value="100000"> </div>
+                                    <div class="form-group"> <label>Prazo da Análise (anos)</label> <input type="number" id="comp-prazo-anos" value="30"> </div>
+                                    <div class="form-group"> <label>Valorização Anual do Imóvel (%)</label> <input type="number" id="comp-valorizacao-imovel" value="5.0" step="0.1"> </div>
+                                    <div class="form-group"> <label>Juros do Financiamento (ao ano %)</label> <input type="number" id="comp-juros-financiamento" value="11.0" step="0.1"> </div>
+                                    <div class="form-group"> <label>Valor do Aluguel Mensal (R$)</label> <input type="number" id="comp-valor-aluguel" value="2500"> </div>
+                                    <div class="form-group"> <label>Reajuste Anual do Aluguel (%)</label> <input type="number" id="comp-reajuste-aluguel" value="4.0" step="0.1"> </div>
+                                    <div class="form-group"> <label>Taxa de Adm. Total do Consórcio (%)</label> <input type="number" id="comp-taxa-consorcio" value="20.0" step="0.1"> </div>
+                                    <div class="form-group"> <label>Rentabilidade dos Investimentos (ao ano %)</label> <input type="number" id="comp-rentabilidade-investimentos" value="10.0" step="0.1"> </div>
                                 </div>
-                                <div class="scenario-card">
-                                    <h4>Cenário Mediano</h4>
-                                    <p>Patrimônio ao se aposentar:</p>
-                                    <strong id="mediano-value" class="result-value"></strong>
+                                <button type="submit" class="btn btn-primary">Comparar Cenários</button>
+                            </form>
+                            <div id="comparison-results" class="hidden">
+                                <h3>Evolução do Patrimônio Líquido</h3>
+                                <div class="chart-container">
+                                    <canvas id="comparison-chart"></canvas>
                                 </div>
-                                <div class="scenario-card">
-                                    <h4>Cenário Otimista</h4>
-                                    <p>Patrimônio ao se aposentar:</p>
-                                    <strong id="otimista-value" class="result-value positive"></strong>
-                                </div>
-                                <div class="scenario-card">
-                                    <h4>Patrimônio Final (Herança)</h4>
-                                    <p>Estimativa mediana no fim da vida:</p>
-                                    <strong id="heranca-value" class="result-value"></strong>
-                                </div>
-                            </div>
-                            <div id="suggestion-card" class="hidden">
-                                <h4>Sugestões de Custo de Vida (Pós-Aposentadoria)</h4>
-                                <p>Valores mensais sugeridos (em dinheiro de hoje) e calculados de forma conservadora para alinhar com a simulação de Monte Carlo:</p>
-                                <div class="suggestion-grid">
-                                    <div class="suggestion-item">
-                                        <h5>Para PRESERVAR o Patrimônio</h5>
-                                        <span>(Retirada segura para viver dos juros e manter o principal, deixando herança máxima)</span>
-                                        <strong id="sugestao-preservacao" class="result-value"></strong>
-                                    </div>
-                                    <div class="suggestion-item">
-                                        <h5>Para USAR o Patrimônio</h5>
-                                        <span>(Retirada máxima sustentável para o patrimônio durar até o fim da vida)</span>
-                                        <strong id="sugestao-maxima" class="result-value"></strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="ai-analysis" class="hidden">
-                                <h4>Análise Inteligente</h4>
-                                <p id="ai-text"></p>
                             </div>
                         </div>
                     </div>
-                     <button id="download-pdf" class="btn hidden" style="width: 100%; margin-top: 2rem;">Exportar Relatório em PDF</button>
                 </div>
             </div>
         </section>
@@ -146,7 +88,6 @@
         </div>
     </footer>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>
