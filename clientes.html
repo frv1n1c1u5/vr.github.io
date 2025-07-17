@@ -26,7 +26,6 @@
                     <li><a href="indicadores.html">Indicadores</a></li>
                     <li><a href="blog.html">Blog</a></li>
                     <li><a href="contato.html">Contato</a></li>
-                    <li><a href="tradutor.html">Tradutor Financeiro</a></li>
                     <li class="menu-button"><a href="https://wa.me/5551999381379?text=Ol%C3%A1%20Vinicius%2C%20vi%20seu%20site%20e%20gostaria%20de%20saber%20mais" target="_blank">Fale Comigo</a></li>
                 </ul>
             </nav>
@@ -48,7 +47,26 @@
                         <h2>Simulador de Cenários de Aposentadoria</h2>
                         <p class="page-intro">Preencha os campos abaixo para rodar uma simulação de Monte Carlo e entender as probabilidades e cenários para o seu futuro financeiro.</p>
                         <div class="calculator-container">
-                             </div>
+                            <form id="retirement-form">
+                                <div class="form-grid">
+                                    <div class="form-group"><label for="current-age">Idade atual</label><input type="number" id="current-age" value="30" required></div>
+                                    <div class="form-group"><label for="retirement-age">Idade para aposentadoria</label><input type="number" id="retirement-age" value="60" required></div>
+                                    <div class="form-group"><label for="current-patrimony">Patrimônio atual (R$)</label><input type="number" id="current-patrimony" value="100000" required></div>
+                                    <div class="form-group"><label for="monthly-contribution">Aporte mensal (R$)</label><input type="number" id="monthly-contribution" value="1000" required></div>
+                                    <div class="form-group"><label for="annual-return">Rentabilidade média anual (%)</label><input type="number" id="annual-return" step="0.1" value="9.0" required></div>
+                                    <div class="form-group"><label for="annual-inflation">Inflação anual esperada (%)</label><input type="number" id="annual-inflation" step="0.1" value="4.0" required></div>
+                                    <div class="form-group"><label for="post-retirement-cost">Custo de vida mensal desejado (R$)</label><input type="number" id="post-retirement-cost" value="5000" required></div>
+                                    <div class="form-group"><label for="life-expectancy">Expectativa de vida (anos)</label><input type="number" id="life-expectancy" value="85" required></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Analisar Cenários</button>
+                            </form>
+                            <div id="report-container">
+                                <div id="result-section" class="hidden">
+                                    <h3>Análise de Cenários</h3>
+                                    </div>
+                            </div>
+                            <button id="download-pdf" class="btn hidden" style="width: 100%; margin-top: 2rem;">Exportar Relatório em PDF</button>
+                        </div>
                     </div>
 
                     <div id="tab-comparador" class="tab-pane">
@@ -57,15 +75,15 @@
                         <div class="calculator-container">
                             <form id="comparison-form">
                                 <div class="form-grid">
-                                    <div class="form-group"> <label>Valor do Imóvel (R$)</label> <input type="number" id="comp-valor-imovel" value="500000"> </div>
-                                    <div class="form-group"> <label>Valor da Entrada (R$)</label> <input type="number" id="comp-valor-entrada" value="100000"> </div>
-                                    <div class="form-group"> <label>Prazo da Análise (anos)</label> <input type="number" id="comp-prazo-anos" value="30"> </div>
-                                    <div class="form-group"> <label>Valorização Anual do Imóvel (%)</label> <input type="number" id="comp-valorizacao-imovel" value="5.0" step="0.1"> </div>
-                                    <div class="form-group"> <label>Juros do Financiamento (ao ano %)</label> <input type="number" id="comp-juros-financiamento" value="11.0" step="0.1"> </div>
-                                    <div class="form-group"> <label>Valor do Aluguel Mensal (R$)</label> <input type="number" id="comp-valor-aluguel" value="2500"> </div>
-                                    <div class="form-group"> <label>Reajuste Anual do Aluguel (%)</label> <input type="number" id="comp-reajuste-aluguel" value="4.0" step="0.1"> </div>
-                                    <div class="form-group"> <label>Taxa de Adm. Total do Consórcio (%)</label> <input type="number" id="comp-taxa-consorcio" value="20.0" step="0.1"> </div>
-                                    <div class="form-group"> <label>Rentabilidade dos Investimentos (ao ano %)</label> <input type="number" id="comp-rentabilidade-investimentos" value="10.0" step="0.1"> </div>
+                                    <div class="form-group"><label>Valor do Imóvel (R$)</label><input type="number" id="comp-valor-imovel" value="500000"></div>
+                                    <div class="form-group"><label>Valor da Entrada (R$)</label><input type="number" id="comp-valor-entrada" value="100000"></div>
+                                    <div class="form-group"><label>Prazo da Análise (anos)</label><input type="number" id="comp-prazo-anos" value="30"></div>
+                                    <div class="form-group"><label>Valorização Anual do Imóvel (%)</label><input type="number" id="comp-valorizacao-imovel" value="5.0" step="0.1"></div>
+                                    <div class="form-group"><label>Juros do Financiamento (ao ano %)</label><input type="number" id="comp-juros-financiamento" value="11.0" step="0.1"></div>
+                                    <div class="form-group"><label>Valor do Aluguel Mensal (R$)</label><input type="number" id="comp-valor-aluguel" value="2500"></div>
+                                    <div class="form-group"><label>Reajuste Anual do Aluguel (%)</label><input type="number" id="comp-reajuste-aluguel" value="4.0" step="0.1"></div>
+                                    <div class="form-group"><label>Taxa de Adm. Total do Consórcio (%)</label><input type="number" id="comp-taxa-consorcio" value="20.0" step="0.1"></div>
+                                    <div class="form-group"><label>Rentabilidade dos Investimentos (ao ano %)</label><input type="number" id="comp-rentabilidade-investimentos" value="10.0" step="0.1"></div>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Comparar Cenários</button>
                             </form>
