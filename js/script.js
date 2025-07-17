@@ -108,7 +108,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (!projectionChart) {
                     const ctx = document.getElementById('projection-chart').getContext('2d');
-                    projectionChart = new Chart(ctx, { type: 'line', data: { labels: results.graficoLabels, datasets: [ { label: 'Cenário Otimista (90%)', data: [], borderColor: 'rgba(40, 167, 69, 0.3)', pointRadius: 0, borderWidth: 1 }, { label: 'Projeção Mediana (50%)', data: [], borderColor: 'rgb(10, 66, 117)', backgroundColor: 'rgba(10, 66, 117, 0.1)', fill: '-1', tension: 0.2, pointRadius: 1, borderWidth: 2 }, { label: 'Cenário Pessimista (10%)', data: [], borderColor: 'rgba(220, 53, 69, 0.3)', backgroundColor: 'rgba(10, 66, 117, 0.1)', fill: '-1', pointRadius: 0, borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false } });
+                    projectionChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: results.graficoLabels,
+                            datasets: [
+                                { label: 'Cenário Otimista (90%)', data: [], borderColor: 'rgba(40, 167, 69, 0.3)', pointRadius: 0, borderWidth: 1 },
+                                { label: 'Projeção Mediana (50%)', data: [], borderColor: 'rgb(10, 66, 117)', backgroundColor: 'rgba(10, 66, 117, 0.1)', fill: '-1', tension: 0.2, pointRadius: 1, borderWidth: 2 },
+                                { label: 'Cenário Pessimista (10%)', data: [], borderColor: 'rgba(220, 53, 69, 0.3)', backgroundColor: 'rgba(10, 66, 117, 0.1)', fill: '-1', pointRadius: 0, borderWidth: 1 }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            scales: {
+                                x: { type: 'time', time: { unit: 'year', parser: 'yyyy', displayFormats: { year: 'yyyy' } } },
+                                y: { ticks: { callback: (v) => formatCurrency(v).replace(/\s/g, '') } }
+                            },
+                            plugins: {
+                                annotation: {
+                                    annotations: {
+                                        retirementLine: {
+                                            type: 'line',
+                                            xMin: 1900, xMax: 1900,
+                                            borderColor: 'rgba(220, 53, 69, 0.7)',
+                                            borderWidth: 2,
+                                            borderDash: [6, 6],
+                                            label: { content: 'Aposentadoria', display: true, position: 'start', backgroundColor: 'rgba(220, 53, 69, 0.7)', font: { size: 10 } }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
                 }
                 updateView('nominal');
             } catch (error) {
@@ -134,8 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- LÓGICA DA PÁGINA 'INDICADORES' ---
     if (document.getElementById('indicators-container')) {
-        const ALPHA_VANTAGE_KEY = 'SUA_CHAVE_API_DA_ALPHA_VANTAGE_AQUI'; 
-        // Lembre-se de colocar sua chave aqui
+        const ALPHA_VANTAGE_KEY = 'SUA_CHAVE_API_DA_ALPHA_VANTAGE_AQUI'; // Lembre-se de colocar sua chave aqui
         
         const updateText = (elementId, value, suffix = '', precision = 2) => {
             const element = document.getElementById(elementId);
@@ -196,8 +226,16 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) { console.error('Erro ao buscar dados da Alpha Vantage:', error); }
         }
         
+        async function fetchHistoricalData() {
+            // Chamadas para histórico podem ser otimizadas ou feitas sob demanda no futuro para não gastar a chave da API
+            updateText('dolar-min-max-12m', 'N/A');
+            updateText('ibov-ano', 'N/A');
+            updateText('ibov-12m', 'N/A');
+        }
+
         fetchBCBMacroData();
         fetchMarketData();
+        fetchHistoricalData();
     }
     
     // --- LÓGICA DA PÁGINA 'TRADUTOR FINANCEIRO' ---
