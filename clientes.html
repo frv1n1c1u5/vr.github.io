@@ -66,28 +66,15 @@
                                     <button type="submit" class="btn btn-primary">Analisar Cenários</button>
                                 </form>
                                 <div id="report-container">
-                                    
                                     <div id="retirement-results" class="hidden">
-                                        <h3>Análise de Cenários</h3>
-                                        <div class="view-toggle"><button id="btn-nominal" class="toggle-btn active">Ver Valores Nominais</button><button id="btn-real" class="toggle-btn">Ver Poder de Compra (Real)</button></div>
-
-                                        <div class="chart-container"><canvas id="retirement-chart-canvas"></canvas></div>
-                                        
-                                        <div class="scenarios-grid">
-                                            <div class="scenario-card"><h4>Cenário Pessimista</h4><p>Patrimônio ao se aposentar:</p><strong id="pessimista-value" class="result-value negative"></strong></div>
-                                            <div class="scenario-card"><h4>Cenário Mediano</h4><p>Patrimônio ao se aposentar:</p><strong id="mediano-value" class="result-value"></strong></div>
-                                            <div class="scenario-card"><h4>Cenário Otimista</h4><p>Patrimônio ao se aposentar:</p><strong id="otimista-value" class="result-value positive"></strong></div>
-                                            <div class="scenario-card"><h4>Patrimônio Final (Herança)</h4><p>Estimativa mediana no fim da vida:</p><strong id="heranca-value" class="result-value"></strong></div>
                                         </div>
-                                        <div id="suggestion-card" class="hidden">
-                                            <h4>Sugestões de Custo de Vida (Pós-Aposentadoria)</h4>
-                                            <p>Valores mensais sugeridos (em dinheiro de hoje) com base no seu cenário mediano:</p>
-                                            <div class="suggestion-grid">
-                                                <div class="suggestion-item"><h5>Para PRESERVAR o Patrimônio</h5><span>(Retirada segura para viver dos juros e manter o principal)</span><strong id="sugestao-preservacao" class="result-value"></strong></div>
-                                                <div class="suggestion-item"><h5>Para USAR o Patrimônio</h5><span>(Retirada máxima sustentável para o patrimônio durar até o fim da vida)</span><strong id="sugestao-maxima" class="result-value"></strong></div>
-                                            </div>
+                                    <div id="suggestion-card" class="hidden">
+                                        <h4>Sugestões de Custo de Vida (Pós-Aposentadoria)</h4>
+                                        <p>Valores mensais sugeridos (em dinheiro de hoje) com base no seu cenário mediano:</p>
+                                        <div class="suggestion-grid">
+                                            <div class="suggestion-item"><h5>Para PRESERVAR o Patrimônio</h5><span>(Retirada segura para viver dos juros e manter o principal)</span><strong id="sugestao-preservacao" class="result-value"></strong></div>
+                                            <div class="suggestion-item"><h5>Para USAR o Patrimônio</h5><span>(Retirada máxima sustentável para o patrimônio durar até o fim da vida)</span><strong id="sugestao-maxima" class="result-value"></strong></div>
                                         </div>
-                                        <div id="ai-analysis" class="hidden"><h4>Análise Inteligente</h4><p id="ai-text"></p></div>
                                     </div>
                                 </div>
                                 <button id="download-pdf" class="btn hidden" style="width: 100%; margin-top: 2rem;">Exportar Relatório em PDF</button>
@@ -98,26 +85,7 @@
                         <h2>Financiamento vs. Aluguel vs. Consórcio</h2>
                         <p class="page-intro">Descubra qual caminho faz mais sentido para seus objetivos, analisando a evolução do seu patrimônio em cada cenário.</p>
                         <div class="calculator-container">
-                            <form id="comparison-form">
-                                <div class="form-grid">
-                                    <div class="form-group"><label>Valor do Imóvel (R$)</label><input type="number" id="comp-valor-imovel" value="500000"></div>
-                                    <div class="form-group"><label>Valor da Entrada (R$)</label><input type="number" id="comp-valor-entrada" value="100000"></div>
-                                    <div class="form-group"><label>Prazo da Análise (anos)</label><input type="number" id="comp-prazo-anos" value="30"></div>
-                                    <div class="form-group"><label>Valorização Anual do Imóvel (%)</label><input type="number" id="comp-valorizacao-imovel" value="5.0" step="0.1"></div>
-                                    <div class="form-group"><label>Juros do Financiamento (ao ano %)</label><input type="number" id="comp-juros-financiamento" value="11.0" step="0.1"></div>
-                                    <div class="form-group"><label>Valor do Aluguel Mensal (R$)</label><input type="number" id="comp-valor-aluguel" value="2500"></div>
-                                    <div class="form-group"><label>Reajuste Anual do Aluguel (%)</label><input type="number" id="comp-reajuste-aluguel" value="4.0" step="0.1"></div>
-                                    <div class="form-group"><label>Taxa de Adm. Total do Consórcio (%)</label><input type="number" id="comp-taxa-consorcio" value="20.0" step="0.1"></div>
-                                    <div class="form-group"><label>Rentabilidade dos Investimentos (ao ano %)</label><input type="number" id="comp-rentabilidade-investimentos" value="10.0" step="0.1"></div>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Comparar Cenários</button>
-                            </form>
-                            <div id="comparison-results" class="hidden">
-                                <h3>Evolução do Patrimônio Líquido</h3>
-                                <div class="chart-container"><canvas id="comparison-chart"></canvas></div>
-                                <div id="comparison-summary" class="scenarios-grid"></div>
-                            </div>
-                        </div>
+                             </div>
                     </div>
                 </div>
             </div>
