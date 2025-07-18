@@ -1,4 +1,4 @@
-/* js/script.js - CÓDIGO COMPLETO E ATUALIZADO */
+/* js/script.js - CÓDIGO COMPLETO E FINAL */
 
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     };
 
-    // --- LÓGICA GERAL: Navegação Ativa ---
     try {
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         document.querySelectorAll('nav a:not(.menu-button a)').forEach(link => {
@@ -17,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     } catch (e) { console.error("Erro na navegação", e); }
 
-    // --- LÓGICA DAS ABAS (clientes.html) ---
     const tabsContainer = document.querySelector(".tool-tabs");
     if (tabsContainer) {
         const tabLinks = document.querySelectorAll(".tab-link");
@@ -35,12 +33,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- LÓGICA DO SIMULADOR DE APOSENTADORIA ---
     const retirementForm = document.getElementById('retirement-form');
     if (retirementForm) {
         let retirementChart = null;
-        let apiResults = null; // Para guardar os resultados da API (nominal e real)
-        let currentView = 'real'; // Visão inicial é 'real'
+        let apiResults = null;
+        let currentView = 'real';
 
         const resultsContainer = document.getElementById('retirement-results');
         const suggestionCard = document.getElementById('suggestion-card');
@@ -48,13 +45,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function updateDisplay() {
             if (!apiResults) return;
-
-            const data = apiResults[currentView]; // Pega os dados da visão atual ('real' ou 'nominal')
+            const data = apiResults[currentView];
 
             document.getElementById('pessimista-value').textContent = formatCurrency(data.pessimista);
             document.getElementById('mediano-value').textContent = formatCurrency(data.mediano);
             document.getElementById('otimista-value').textContent = formatCurrency(data.otimista);
             document.getElementById('heranca-value').textContent = formatCurrency(data.patrimonioFinalMediano);
+            document.getElementById('total-aportado-value').textContent = formatCurrency(data.totalAportado);
+            document.getElementById('total-rendimentos-value').textContent = formatCurrency(data.totalRendimentos);
             
             if (currentView === 'real') {
                 document.getElementById('sugestao-preservacao').textContent = formatCurrency(data.sugestaoPreservacao);
@@ -121,10 +119,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3>Análise de Cenários</h3>
                     <div class="chart-container"><canvas id="retirement-chart-canvas"></canvas></div>
                     <div class="scenarios-grid">
-                        <div class="scenario-card"><h4>Cenário Pessimista (10%)</h4><p>Patrimônio ao se aposentar:</p><strong id="pessimista-value" class="result-value negative"></strong></div>
                         <div class="scenario-card"><h4>Cenário Mediano (50%)</h4><p>Patrimônio ao se aposentar:</p><strong id="mediano-value" class="result-value"></strong></div>
                         <div class="scenario-card"><h4>Cenário Otimista (90%)</h4><p>Patrimônio ao se aposentar:</p><strong id="otimista-value" class="result-value positive"></strong></div>
-                        <div class="scenario-card"><h4>Patrimônio Final (Herança)</h4><p>Estimativa mediana no fim da vida:</p><strong id="heranca-value" class="result-value"></strong></div>
+                        <div class="scenario-card"><h4>Cenário Pessimista (10%)</h4><p>Patrimônio ao se aposentar:</p><strong id="pessimista-value" class="result-value negative"></strong></div>
+                        <div class="scenario-card"><h4>Total Aportado</h4><p>Soma de todas as contribuições:</p><strong id="total-aportado-value" class="result-value"></strong></div>
+                        <div class="scenario-card"><h4>Total em Rendimentos</h4><p>Juros e valorização do período:</p><strong id="total-rendimentos-value" class="result-value positive"></strong></div>
+                        <div class="scenario-card"><h4>Herança Mediana</h4><p>Estimativa de patrimônio final:</p><strong id="heranca-value" class="result-value"></strong></div>
                     </div>
                     <div id="ai-analysis-card" class="scenario-card" style="grid-column: 1 / -1; text-align: left; border-bottom-color: #6f42c1;">
                         <h4 style="color: #6f42c1; text-align:center;">Análise da Inteligência Artificial</h4>
@@ -148,8 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ]
                     },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
+                        responsive: true, maintainAspectRatio: false,
                         scales: { y: { ticks: { callback: (value) => formatCurrency(value) } } },
                         plugins: {
                             legend: { display: false },
@@ -157,12 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             annotation: {
                                 annotations: {
                                     retirementLine: {
-                                        type: 'line',
-                                        scaleID: 'x',
-                                        value: apiResults.anoAposentadoria,
-                                        borderColor: '#0a4275',
-                                        borderWidth: 2,
-                                        borderDash: [6, 6],
+                                        type: 'line', scaleID: 'x', value: apiResults.anoAposentadoria,
+                                        borderColor: '#0a4275', borderWidth: 2, borderDash: [6, 6],
                                         label: { content: 'Aposentadoria', enabled: true, position: 'start', backgroundColor: '#0a4275', font: { weight: 'bold' } }
                                     }
                                 }
