@@ -1,9 +1,12 @@
-# netlify.toml
+# netlify.toml (Versão com comando de build explícito)
+
 [build]
+  # ESTA É A NOVA LINHA:
+  command = "pip install -r netlify/functions/requirements.txt"
   publish = "."
   functions = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/api"  # <-- Aponta para o novo maestro
+  to = "/.netlify/functions/api"
   status = 200
