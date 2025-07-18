@@ -1,7 +1,7 @@
-# api/indicadores.py
-# VERSÃO 2.0: Usa fontes diretas (Banco Central e yfinance) para máxima precisão.
+# /netlify/functions/routes/indicadores.py
+# VERSÃO FINAL: Adaptado para a estrutura de Blueprints.
 
-from flask import Flask, jsonify
+from flask import Blueprint, jsonify
 import httpx
 import asyncio
 import yfinance as yf
@@ -9,7 +9,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 import pytz # Para lidar com fusos horários corretamente
 
-app = Flask(__name__)
+# 1. Cria o Blueprint em vez de um App Flask
+indicadores_bp = Blueprint('indicadores_bp', __name__)
 
 # --- Funções para buscar dados do Banco Central (SGS) ---
 BCB_API_URL = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.{codigo}/dados?formato=json"
@@ -30,28 +31,34 @@ def fetch_market_data():
     """Busca dados de múltiplos tickers usando yfinance."""
     try:
         tickers = yf.Tickers('^BVSP BRL=X ^GSPC ^IXIC')
-        # Usamos period='1y' para ter dados para calcular variação de 12 meses
-        hist = tickers.history(period='1y', auto_adjust=True)
-        
         data = {}
-        for ticker in tickers.tickers:
-            last_price = hist['Close'][ticker].iloc[-1]
-            prev_price = hist['Close'][ticker].iloc[-2]
-            ytd_price = hist['Close'][ticker].loc[hist.index.year == datetime.now().year].iloc[0]
+        # Itera sobre os tickers para garantir que os dados sejam buscados individualmente
+        for ticker_symbol in tickers.tickers:
+            ticker_obj = tickers.tickers[ticker_symbol]
+            hist = ticker_obj.history(period='1y', auto_adjust=True)
+            
+            if not hist.empty:
+                last_price = hist['Close'].iloc[-1]
+                prev_price = hist['Close'].iloc[-2] if len(hist['Close']) > 1 else last_price
+                
+                # Para YTD, encontra o primeiro dia de negociação do ano atual
+                ytd_hist = hist[hist.index.year == datetime.now().year]
+                ytd_price = ytd_hist['Close'].iloc[0] if not ytd_hist.empty else last_price
 
-            data[ticker] = {
-                'pontos': last_price,
-                'variacao_dia': ((last_price / prev_price) - 1) * 100,
-                'variacao_ano': ((last_price / ytd_price) - 1) * 100,
-                'variacao_12m': ((last_price / hist['Close'][ticker].iloc[0]) - 1) * 100,
-            }
+                data[ticker_symbol] = {
+                    'pontos': last_price,
+                    'variacao_dia': ((last_price / prev_price) - 1) * 100,
+                    'variacao_ano': ((last_price / ytd_price) - 1) * 100,
+                    'variacao_12m': ((last_price / hist['Close'].iloc[0]) - 1) * 100,
+                }
         return data
     except Exception as e:
         print(f"Erro ao buscar dados do yfinance: {e}")
         return None
 
 # --- Rota Principal da API ---
-@app.route('/api/indicadores', methods=['GET'])
+# 2. Usa o Blueprint para definir a rota
+@indicadores_bp.route('/api/indicadores', methods=['GET'])
 def get_all_indicators():
     
     async def main():
@@ -83,19 +90,21 @@ def get_all_indicators():
             if series_data:
                 df = pd.DataFrame(series_data)
                 df['valor'] = pd.to_numeric(df['valor'])
-                df['data'] = pd.to_datetime(df['data'], format='%d/%m/%Y')
+                # Converte a data e remove o fuso horário para comparação segura
+                df['data'] = pd.to_datetime(df['data'], format='%d/%m/%Y').dt.tz_localize(None)
                 
                 # Acumulado 12 meses (soma dos últimos 12 valores mensais)
                 twelve_months = df.tail(12)['valor'].sum()
                 
                 # Acumulado no ano
-                ytd_df = df[df['data'] >= start_of_year]
+                ytd_df = df[df['data'] >= start_of_year.replace(tzinfo=None)]
                 year_to_date = ytd_df['valor'].sum() if not ytd_df.empty else 0
                 
                 final_data[name] = {"doze_meses": twelve_months, "ano": year_to_date}
 
         # Processa dados de Mercado do yfinance
         def process_ticker_data(ticker_symbol):
+            if not market_data: return {}
             data = market_data.get(ticker_symbol, {})
             return {
                 "pontos": data.get('pontos'),
