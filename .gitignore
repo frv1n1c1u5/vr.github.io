@@ -1,0 +1,18 @@
+# Arquivos compilados do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pastas de ambiente virtual
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Outros arquivos de build e cache
+.cache/
+.pytest_cache/
+build/
+dist/
+*.egg-info/
