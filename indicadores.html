@@ -12,14 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
     <header class="sticky-header">
-        <div class="container">
-            <a href="index.html" class="logo">Vinicius Rocha</a>
-            <nav>
-                </nav>
-        </div>
-    </header>
+        </header>
 
     <main>
         <section class="content-page">
@@ -32,26 +26,26 @@
                         <h3>Inflação (IPCA)</h3>
                         <div class="indicator-item"><span>Acumulado no ano</span><strong id="ipca-ano">Carregando...</strong></div>
                         <div class="indicator-item"><span>Acumulado 12 meses</span><strong id="ipca-12m">Carregando...</strong></div>
-                        <small>Fonte: IBGE / BCB</small>
+                        <small>Fonte: Banco Central</small>
                     </div>
                     <div class="indicator-card-large">
                         <h3>Taxa Selic</h3>
-                        <div class="indicator-item"><span>Acumulada no ano</span><strong id="selic-ano">Carregando...</strong></div>
-                        <div class="indicator-item"><span>Acumulada 12 meses</span><strong id="selic-12m">Carregando...</strong></div>
+                        <div class="indicator-item"><span>Meta Anual</span><strong id="selic-ano">Carregando...</strong></div>
                         <small>Fonte: Banco Central</small>
                     </div>
                     <div class="indicator-card-large">
                         <h3>IGP-M</h3>
                         <div class="indicator-item"><span>Acumulado no ano</span><strong id="igpm-ano">Carregando...</strong></div>
                         <div class="indicator-item"><span>Acumulado 12 meses</span><strong id="igpm-12m">Carregando...</strong></div>
-                        <small>Fonte: FGV / BCB</small>
+                        <small>Fonte: Banco Central</small>
                     </div>
                     <div class="indicator-card-large">
-                        <h3>Dólar (PTAX Venda)</h3>
-                        <div class="indicator-item"><span>Cotação Atual</span><strong id="dolar-atual">Carregando...</strong></div>
+                        <h3>Dólar (USD/BRL)</h3>
+                        <div class="indicator-item"><span>Cotação Atual</span><strong id="dolar-cotacao">Carregando...</strong></div>
                         <div class="indicator-item"><span>Variação (Dia)</span><strong id="dolar-dia">Carregando...</strong></div>
-                        <div class="indicator-item"><span>Mínima / Máxima (12M)</span><strong id="dolar-min-max-12m">Carregando...</strong></div>
-                        <small>Fonte: BCB / Brapi</small>
+                        <div class="indicator-item"><span>Variação no Ano</span><strong id="dolar-ano">Carregando...</strong></div>
+                        <div class="indicator-item"><span>Variação 12 meses</span><strong id="dolar-12m">Carregando...</strong></div>
+                        <small>Fonte: Yahoo Finance</small>
                     </div>
                      <div class="indicator-card-large">
                         <h3>Ibovespa</h3>
@@ -59,7 +53,23 @@
                         <div class="indicator-item"><span>Variação (Dia)</span><strong id="ibov-dia">Carregando...</strong></div>
                         <div class="indicator-item"><span>Variação no Ano</span><strong id="ibov-ano">Carregando...</strong></div>
                         <div class="indicator-item"><span>Variação 12 meses</span><strong id="ibov-12m">Carregando...</strong></div>
-                        <small>Fonte: B3 / Brapi</small>
+                        <small>Fonte: Yahoo Finance</small>
+                    </div>
+                    <div class="indicator-card-large">
+                        <h3>S&P 500</h3>
+                        <div class="indicator-item"><span>Pontuação</span><strong id="sp500-pontos">Carregando...</strong></div>
+                        <div class="indicator-item"><span>Variação (Dia)</span><strong id="sp500-dia">Carregando...</strong></div>
+                        <div class="indicator-item"><span>Variação no Ano</span><strong id="sp500-ano">Carregando...</strong></div>
+                        <div class="indicator-item"><span>Variação 12 meses</span><strong id="sp500-12m">Carregando...</strong></div>
+                        <small>Fonte: Yahoo Finance</small>
+                    </div>
+                    <div class="indicator-card-large">
+                        <h3>Nasdaq</h3>
+                        <div class="indicator-item"><span>Pontuação</span><strong id="nasdaq-pontos">Carregando...</strong></div>
+                        <div class="indicator-item"><span>Variação (Dia)</span><strong id="nasdaq-dia">Carregando...</strong></div>
+                        <div class="indicator-item"><span>Variação no Ano</span><strong id="nasdaq-ano">Carregando...</strong></div>
+                        <div class="indicator-item"><span>Variação 12 meses</span><strong id="nasdaq-12m">Carregando...</strong></div>
+                        <small>Fonte: Yahoo Finance</small>
                     </div>
                 </div>
             </div>
@@ -71,72 +81,67 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            
             // --- FUNÇÕES AUXILIARES DE FORMATAÇÃO ---
-            const formatPercent = (value) => value ? `${value.toFixed(2)}%` : 'N/A';
-            const formatCurrency = (value) => value ? `R$ ${value.toFixed(2)}` : 'N/A';
-            const formatPoints = (value) => value ? value.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : 'N/A';
+            const formatPercent = (value) => (value || value === 0) ? `${value.toFixed(2)}%` : 'N/A';
+            const formatCurrency = (value) => (value || value === 0) ? `R$ ${value.toFixed(2)}` : 'N/A';
+            const formatPoints = (value) => (value || value === 0) ? value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
             
-            // Função para aplicar cor (verde/vermelho) a um valor
             const applyColor = (element, value) => {
-                if (!value) return;
-                element.classList.remove('positive', 'negative');
-                if (value > 0) {
-                    element.classList.add('positive');
-                } else if (value < 0) {
-                    element.classList.add('negative');
+                if (value || value === 0) {
+                    element.classList.remove('positive', 'negative');
+                    if (value > 0) element.classList.add('positive');
+                    else if (value < 0) element.classList.add('negative');
                 }
             };
 
-            // --- FUNÇÃO PRINCIPAL PARA CARREGAR DADOS ---
+            const populateCard = (prefix, data) => {
+                const pontosEl = document.getElementById(`${prefix}-pontos`) || document.getElementById(`${prefix}-cotacao`);
+                const diaEl = document.getElementById(`${prefix}-dia`);
+                const anoEl = document.getElementById(`${prefix}-ano`);
+                const m12El = document.getElementById(`${prefix}-12m`);
+
+                if(pontosEl) pontosEl.textContent = (prefix === 'dolar') ? formatCurrency(data.cotacao) : formatPoints(data.pontos);
+                if(diaEl) {
+                    diaEl.textContent = formatPercent(data.variacao_dia);
+                    applyColor(diaEl, data.variacao_dia);
+                }
+                if(anoEl) {
+                    anoEl.textContent = formatPercent(data.variacao_ano);
+                    applyColor(anoEl, data.variacao_ano);
+                }
+                if(m12El) {
+                    m12El.textContent = formatPercent(data.variacao_12m);
+                    applyColor(m12El, data.variacao_12m);
+                }
+            };
+
             async function loadIndicators() {
                 try {
-                    // Faz a chamada para a NOSSA API, não para a externa
                     const response = await fetch('/api/indicadores');
-                    if (!response.ok) {
-                        throw new Error('Não foi possível buscar os dados.');
-                    }
+                    if (!response.ok) throw new Error('Não foi possível buscar os dados.');
                     const data = await response.json();
 
-                    // Preenche os campos com os dados recebidos
-                    // IPCA
+                    // Preenche dados Macroeconômicos
                     document.getElementById('ipca-ano').textContent = formatPercent(data.ipca.ano);
                     document.getElementById('ipca-12m').textContent = formatPercent(data.ipca.doze_meses);
-                    
-                    // SELIC
-                    document.getElementById('selic-ano').textContent = formatPercent(data.selic.ano);
-                    document.getElementById('selic-12m').textContent = formatPercent(data.selic.doze_meses);
-
-                    // IGP-M
                     document.getElementById('igpm-ano').textContent = formatPercent(data.igpm.ano);
                     document.getElementById('igpm-12m').textContent = formatPercent(data.igpm.doze_meses);
+                    document.getElementById('selic-ano').textContent = formatPercent(data.selic.doze_meses); // Selic Meta é o acumulado 12m
 
-                    // Dólar
-                    document.getElementById('dolar-atual').textContent = formatCurrency(data.dolar.cotacao);
-                    const dolarDiaEl = document.getElementById('dolar-dia');
-                    dolarDiaEl.textContent = formatPercent(data.dolar.variacao_dia);
-                    applyColor(dolarDiaEl, data.dolar.variacao_dia);
-                    document.getElementById('dolar-min-max-12m').textContent = data.dolar.min_max_12m || 'N/A';
-
-                    // Ibovespa
-                    document.getElementById('ibov-pontos').textContent = formatPoints(data.ibovespa.pontos);
-                    const ibovDiaEl = document.getElementById('ibov-dia');
-                    ibovDiaEl.textContent = formatPercent(data.ibovespa.variacao_dia);
-                    applyColor(ibovDiaEl, data.ibovespa.variacao_dia);
-                    document.getElementById('ibov-ano').textContent = formatPercent(data.ibovespa.variacao_ano);
-                    document.getElementById('ibov-12m').textContent = formatPercent(data.ibovespa.variacao_12m);
+                    // Preenche dados de Mercado
+                    populateCard('ibov', data.ibovespa);
+                    populateCard('dolar', data.dolar);
+                    populateCard('sp500', data.sp500);
+                    populateCard('nasdaq', data.nasdaq);
 
                 } catch (error) {
                     console.error('Erro ao carregar indicadores:', error);
-                    // Coloca uma mensagem de erro em todos os campos
                     document.querySelectorAll('.indicators-page-grid strong').forEach(el => {
                         el.textContent = 'Erro';
                         el.classList.add('negative');
                     });
                 }
             }
-
-            // Inicia o carregamento dos dados
             loadIndicators();
         });
     </script>
