@@ -1,4 +1,4 @@
-# /api/aposentadoria.py - CÓDIGO COMPLETO E ATUALIZADO
+# /api/aposentadoria.py - CÓDIGO COMPLETO E FINAL
 
 import os
 from flask import Flask, request, jsonify
@@ -23,7 +23,6 @@ def get_ai_analysis(dados_reais, parametros):
         return "Análise da IA não disponível (chave de API não configurada)."
     
     try:
-        # Formata os valores para a moeda brasileira para melhor leitura no prompt
         patrimonio_mediano_fmt = f"R$ {dados_reais['mediano']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         retirada_preservacao_fmt = f"R$ {dados_reais['sugestaoPreservacao']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         custo_vida_fmt = f"R$ {float(parametros['custoVida']):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -56,7 +55,6 @@ def simular_aposentadoria():
     try:
         dados = request.get_json()
         
-        # Parâmetros
         idade_atual = int(dados['idadeAtual'])
         idade_aposentadoria = int(dados['idadeAposentadoria'])
         expectativa_vida = int(dados['expectativaVida'])
@@ -75,73 +73,95 @@ def simular_aposentadoria():
         if anos_acumulando < 0 or anos_gastando < 0:
             return jsonify({'erro': 'As idades fornecidas são inválidas.'}), 400
 
-        # Arrays para trajetórias NOMINAIS e REAIS
         trajetorias_nominais = np.zeros((num_simulacoes, total_anos + 1))
         trajetorias_reais = np.zeros((num_simulacoes, total_anos + 1))
         trajetorias_nominais[:, 0] = patrimonio_inicial
         trajetorias_reais[:, 0] = patrimonio_inicial
 
-        # Simulação
+        aportes_totais_nominais = np.zeros(num_simulacoes)
+        aportes_totais_reais = np.zeros(num_simulacoes)
+        saques_totais_nominais = np.zeros(num_simulacoes)
+        saques_totais_reais = np.zeros(num_simulacoes)
+
         for i in range(num_simulacoes):
             patrimonio_nominal_ano = patrimonio_inicial
-            
-            # Fase de Acumulação
+            total_aportado_nominal_sim = 0
+            total_aportado_real_sim = 0
+            total_sacado_nominal_sim = 0
+            total_sacado_real_sim = 0
+
             for ano_a in range(anos_acumulando):
                 retorno = np.random.normal(retorno_medio_anual, volatilidade_anual)
-                # O aporte mensal é corrigido pela inflação para manter o poder de compra
                 aporte_anual_corrigido_nominal = (aporte_mensal * 12) * ((1 + inflacao_media_anual) ** ano_a)
-                patrimonio_nominal_ano = patrimonio_nominal_ano * (1 + retorno) + aporte_anual_corrigido_nominal
                 
-                trajetorias_nominais[i, ano_a + 1] = patrimonio_nominal_ano
-                # O valor real é o nominal dividido pelo fator de inflação acumulado
-                trajetorias_reais[i, ano_a + 1] = patrimonio_nominal_ano / ((1 + inflacao_media_anual) ** (ano_a + 1))
+                total_aportado_nominal_sim += aporte_anual_corrigido_nominal
+                total_aportado_real_sim += aporte_anual_corrigido_nominal / ((1 + inflacao_media_anual) ** (ano_a + 1))
 
-            # Fase de Gastos
+                patrimonio_nominal_ano = patrimonio_nominal_ano * (1 + retorno) + aporte_anual_corrigido_nominal
+                trajetorias_nominais[i, ano_a + 1] = patrimonio_nominal_ano
+                trajetorias_reais[i, ano_a + 1] = patrimonio_nominal_ano / ((1 + inflacao_media_anual) ** (ano_a + 1))
+            
+            aportes_totais_nominais[i] = total_aportado_nominal_sim
+            aportes_totais_reais[i] = total_aportado_real_sim
+
             patrimonio_aposentadoria_nominal = patrimonio_nominal_ano
             for ano_g in range(anos_gastando):
                 retorno = np.random.normal(retorno_medio_anual, volatilidade_anual)
                 ano_total = anos_acumulando + ano_g
                 custo_vida_anual_corrigido_nominal = (custo_vida_mensal_hoje * 12) * ((1 + inflacao_media_anual) ** ano_total)
                 
+                saque_efetivo = min(custo_vida_anual_corrigido_nominal, patrimonio_aposentadoria_nominal * (1 + retorno))
+                total_sacado_nominal_sim += saque_efetivo
+                total_sacado_real_sim += saque_efetivo / ((1 + inflacao_media_anual) ** (ano_total + 1))
+
                 patrimonio_aposentadoria_nominal = patrimonio_aposentadoria_nominal * (1 + retorno) - custo_vida_anual_corrigido_nominal
                 patrimonio_aposentadoria_nominal = max(0, patrimonio_aposentadoria_nominal)
-
                 trajetorias_nominais[i, ano_total + 1] = patrimonio_aposentadoria_nominal
                 trajetorias_reais[i, ano_total + 1] = patrimonio_aposentadoria_nominal / ((1 + inflacao_media_anual) ** (ano_total + 1))
+            
+            saques_totais_nominais[i] = total_sacado_nominal_sim
+            saques_totais_reais[i] = total_sacado_real_sim
 
-        # --- Cálculos para os resultados FINAIS ---
-        # NOMINAL
         patrimonio_nominal_aposentadoria = trajetorias_nominais[:, anos_acumulando]
+        nominal_pfinal = np.percentile(trajetorias_nominais[:, -1], 50)
+        nominal_total_aportado = np.percentile(aportes_totais_nominais, 50)
+        nominal_total_sacado = np.percentile(saques_totais_nominais, 50)
         nominal_results = {
             'pessimista': np.percentile(patrimonio_nominal_aposentadoria, 10),
             'mediano': np.percentile(patrimonio_nominal_aposentadoria, 50),
             'otimista': np.percentile(patrimonio_nominal_aposentadoria, 90),
-            'patrimonioFinalMediano': np.percentile(trajetorias_nominais[:, -1], 50),
+            'patrimonioFinalMediano': nominal_pfinal,
+            'totalAportado': nominal_total_aportado,
+            'totalSacado': nominal_total_sacado,
+            'totalRendimentos': (nominal_pfinal + nominal_total_sacado) - (patrimonio_inicial + nominal_total_aportado),
             'graficoLabels': [str(datetime.now().year + i) for i in range(total_anos + 1)],
             'graficoPessimista': list(np.percentile(trajetorias_nominais, 10, axis=0)),
             'graficoMediano': list(np.percentile(trajetorias_nominais, 50, axis=0)),
             'graficoOtimista': list(np.percentile(trajetorias_nominais, 90, axis=0)),
         }
 
-        # REAL (em dinheiro de hoje)
         patrimonio_real_aposentadoria = trajetorias_reais[:, anos_acumulando]
         mediano_real = np.percentile(patrimonio_real_aposentadoria, 50)
+        real_pfinal = np.percentile(trajetorias_reais[:, -1], 50)
+        real_total_aportado = np.percentile(aportes_totais_reais, 50)
+        real_total_sacado = np.percentile(saques_totais_reais, 50)
         retorno_real = ((1 + retorno_medio_anual) / (1 + inflacao_media_anual)) - 1
         retirada_preservacao_mensal_real = (mediano_real * retorno_real) / 12
-
         real_results = {
             'pessimista': np.percentile(patrimonio_real_aposentadoria, 10),
             'mediano': mediano_real,
             'otimista': np.percentile(patrimonio_real_aposentadoria, 90),
-            'patrimonioFinalMediano': np.percentile(trajetorias_reais[:, -1], 50),
+            'patrimonioFinalMediano': real_pfinal,
             'sugestaoPreservacao': retirada_preservacao_mensal_real,
-            'graficoLabels': nominal_results['graficoLabels'], # Labels são os mesmos
+            'totalAportado': real_total_aportado,
+            'totalSacado': real_total_sacado,
+            'totalRendimentos': (real_pfinal + real_total_sacado) - (patrimonio_inicial + real_total_aportado),
+            'graficoLabels': nominal_results['graficoLabels'],
             'graficoPessimista': list(np.percentile(trajetorias_reais, 10, axis=0)),
             'graficoMediano': list(np.percentile(trajetorias_reais, 50, axis=0)),
             'graficoOtimista': list(np.percentile(trajetorias_reais, 90, axis=0)),
         }
-
-        # Gera a análise da IA com base nos dados REAIS
+        
         analise_ia = get_ai_analysis(real_results, dados)
 
         return jsonify({
