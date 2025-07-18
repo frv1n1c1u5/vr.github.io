@@ -1,6 +1,5 @@
-/* /css/style.css - CÓDIGO COMPLETO E ATUALIZADO */
+/* /css/style.css - CÓDIGO COMPLETO E FINAL */
 
-/* --- Variáveis e Configurações Globais --- */
 :root {
     --primary-color: #0a4275;
     --secondary-color: #eaf4ff;
@@ -15,12 +14,8 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 body { font-family: var(--body-font); background-color: var(--white-color); color: var(--dark-gray); line-height: 1.6; }
-
 .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-
-/* --- Cabeçalho e Navegação --- */
 .sticky-header { background-color: var(--white-color); padding: 1rem 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .sticky-header .container { display: flex; justify-content: space-between; align-items: center; }
 .logo { font-family: var(--header-font); font-size: 1.5rem; font-weight: 700; color: var(--primary-color); text-decoration: none; }
@@ -29,11 +24,8 @@ nav a { text-decoration: none; color: var(--dark-gray); font-weight: 700; font-s
 nav a:hover, nav a.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
 .menu-button a { background-color: var(--primary-color); color: var(--white-color); padding: 10px 20px; border-radius: 5px; font-weight: 700; transition: all 0.3s ease; border-bottom: none !important; }
 .menu-button a:hover { color: var(--white-color); transform: translateY(-2px); opacity: 0.9; }
-
-/* --- Estrutura Geral e Conteúdo --- */
 main { padding: 4rem 0; }
 h1, h2, h3, h4, h5 { font-family: var(--header-font); font-weight: 700; color: var(--primary-color); margin-bottom: 1rem; }
-h1 { font-size: 3rem; line-height: 1.1; }
 h2 { font-size: 2.2rem; margin-bottom: 2rem; text-align: center; }
 h3 { font-size: 1.5rem; }
 h4 { font-size: 1.2rem; color: var(--dark-gray); }
@@ -47,80 +39,43 @@ p { margin-bottom: 1rem; }
 .btn:disabled { background-color: var(--medium-gray); opacity: 0.7; cursor: wait; }
 .positive { color: var(--positive-color) !important; }
 .negative { color: var(--negative-color) !important; }
-
-/* --- Navegação por Abas ('Para Clientes') --- */
 .tool-tabs { display: flex; border-bottom: 2px solid #dee2e6; margin-bottom: 2rem; }
 .tab-link { padding: 1rem 1.5rem; cursor: pointer; border: none; background-color: transparent; font-size: 1.1rem; font-weight: 600; font-family: var(--header-font); color: var(--medium-gray); border-bottom: 3px solid transparent; margin-bottom: -2px; }
 .tab-link.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
 .tab-pane { display: none; }
 .tab-pane.active { display: block; animation: fadeIn 0.5s ease-in-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* --- Ferramentas --- */
 .calculator-container { background: var(--light-gray); padding: 2.5rem; border-radius: 8px; margin-top: 1rem; }
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
 .form-group { display: flex; flex-direction: column; }
 .form-group label { margin-bottom: 0.5rem; font-weight: 700; color: var(--dark-gray); }
 .form-group input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
-#result-section { margin-top: 2rem; }
 .chart-container { position: relative; margin: 2rem auto; height: 400px; max-width: 800px; }
-.scenarios-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+.scenarios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 2rem 0; }
 .scenario-card { background: #fff; padding: 1.5rem; text-align: center; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom: 4px solid var(--primary-color); }
 .scenario-card p { font-size: 0.9rem; color: var(--medium-gray); margin-bottom: 0.5rem;}
 .scenario-card strong { font-size: 1.8rem; }
 #suggestion-card { margin-top: 2rem; padding: 2rem; background: #fff; border: 2px dashed var(--primary-color); border-radius: 8px; text-align: center; }
 #suggestion-card > p { max-width: 100%; margin-bottom: 1.5rem; }
 #suggestion-card strong { font-size: 2rem; color: var(--primary-color); display: block; }
-.suggestion-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 1rem; align-items: start; } /* Alterado para 1fr */
-.suggestion-item span { font-size: 0.8rem; color: var(--medium-gray); min-height: 40px; display: block; }
+.suggestion-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 1rem; align-items: start; }
 .result-value { color: var(--dark-gray); }
 .result-value.positive { color: var(--positive-color); }
 .result-value.negative { color: var(--negative-color); }
-
-/* --- Rodapé --- */
 .main-footer { background-color: var(--dark-gray); color: var(--light-gray); text-align: center; padding: 1.5rem 0; margin-top: 4rem; }
+.view-selector-container { display: flex; justify-content: center; margin: 2rem auto; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; width: fit-content; }
+.view-selector-btn { padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600; font-family: var(--header-font); border: none; background-color: var(--light-gray); color: var(--medium-gray); cursor: pointer; transition: all 0.3s ease; }
+.view-selector-btn.active { background-color: var(--primary-color); color: var(--white-color); box-shadow: 0 0 10px rgba(10, 66, 117, 0.3); }
+.view-selector-btn:not(.active):hover { background-color: #e2e6ea; }
 
-/* --- Responsividade --- */
+@media (max-width: 992px) {
+    .scenarios-grid { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 768px) {
     .form-grid { grid-template-columns: 1fr; }
     .scenarios-grid { grid-template-columns: 1fr; }
-    .suggestion-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-    nav ul { gap: 10px 15px; }
     .sticky-header .container { flex-direction: column; gap: 1rem; }
     .tool-tabs { flex-direction: column; }
     .tab-link { margin-bottom: 0; border-bottom-width: 2px; }
     .tab-link.active { border-bottom-color: var(--primary-color); }
-}
-
-/* --- NOVOS ESTILOS PARA O SELETOR NOMINAL/REAL --- */
-.view-selector-container {
-    display: flex;
-    justify-content: center;
-    margin: 2rem auto;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    overflow: hidden;
-    width: fit-content;
-}
-
-.view-selector-btn {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    font-family: var(--header-font);
-    border: none;
-    background-color: var(--light-gray);
-    color: var(--medium-gray);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.view-selector-btn.active {
-    background-color: var(--primary-color);
-    color: var(--white-color);
-    box-shadow: 0 0 10px rgba(10, 66, 117, 0.3);
-}
-
-.view-selector-btn:not(.active):hover {
-    background-color: #e2e6ea;
 }
