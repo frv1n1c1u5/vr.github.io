@@ -35,7 +35,7 @@
         <section class="content-page">
             <div class="container">
                 <h2>Blog de Investimentos</h2>
-                <p class="blog-intro">Um espaço para compartilhar análises, estratégias e reflexões sobre o dinâmico mundo dos investimentos. Acompanhe para se manter atualizado e tomar decisões mais inteligentes.</p>
+                <p class="page-intro">Um espaço para compartilhar análises, estratégias e reflexões sobre o dinâmico mundo dos investimentos. Acompanhe para se manter atualizado e tomar decisões mais inteligentes.</p>
                 
                 <div class="blog-articles-list" id="articles-container">
                     <p>Carregando artigos...</p>
@@ -44,8 +44,7 @@
         </section>
     </main>
 
-    <footer class="sticky-header">
-        <div class="container">
+    <footer class="main-footer"> <div class="container">
             <p>&copy; 2025 Vinicius Rocha | Todos os direitos reservados.</p>
         </div>
     </footer>
@@ -54,31 +53,47 @@
     <script src="js/supabaseClient.js"></script>
     <script>
         const articlesContainer = document.getElementById('articles-container');
+
         async function loadArticles() {
             try {
-                const { data, error } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
+                // ALTERADO: Seleciona colunas específicas para melhor performance
+                const { data, error } = await sbClient
+                    .from('posts')
+                    .select('title, summary, slug, created_at, url_imagem_capa') // Pede a URL da imagem
+                    .order('created_at', { ascending: false });
+
                 if (error) { throw error; }
+
                 if (data.length === 0) {
-                     articlesContainer.innerHTML = '<p>Nenhum artigo encontrado.</p>';
-                     return;
+                    articlesContainer.innerHTML = '<p>Nenhum artigo encontrado.</p>';
+                    return;
                 }
-                articlesContainer.innerHTML = '';
+
+                articlesContainer.innerHTML = ''; // Limpa o container
+
                 data.forEach(article => {
+                    // ALTERADO: Novo layout de card com imagem
                     const articleElement = document.createElement('article');
-                    articleElement.className = 'blog-article';
+                    articleElement.className = 'blog-card'; // Nova classe para estilização
                     articleElement.innerHTML = `
-                        <h3><a href="artigo.html?slug=${article.slug}">${article.title}</a></h3>
-                        <p class="article-meta">Publicado em ${new Date(article.created_at).toLocaleDateString('pt-BR')}</p>
-                        <p>${article.summary}</p>
-                        <a href="artigo.html?slug=${article.slug}" class="read-more">Leia Mais &rarr;</a>
+                        <a href="artigo.html?slug=${article.slug}" class="blog-card-image-link">
+                            <img src="${article.url_imagem_capa}" alt="Capa do artigo: ${article.title}">
+                        </a>
+                        <div class="blog-card-content">
+                            <h3><a href="artigo.html?slug=${article.slug}">${article.title}</a></h3>
+                            <p class="article-meta">Publicado em ${new Date(article.created_at).toLocaleDateString('pt-BR')}</p>
+                            <p>${article.summary}</p>
+                            <a href="artigo.html?slug=${article.slug}" class="read-more">Leia Mais &rarr;</a>
+                        </div>
                     `;
                     articlesContainer.appendChild(articleElement);
                 });
             } catch (error) {
-                 console.error('Erro ao buscar artigos:', error);
-                 articlesContainer.innerHTML = '<p>Não foi possível carregar os artigos no momento. Tente novamente mais tarde.</p>';
+                console.error('Erro ao buscar artigos:', error);
+                articlesContainer.innerHTML = '<p>Não foi possível carregar os artigos no momento. Tente novamente mais tarde.</p>';
             }
         }
+        
         loadArticles();
     </script>
 </body>
