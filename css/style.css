@@ -79,3 +79,136 @@ p { margin-bottom: 1rem; }
     .tab-link { margin-bottom: 0; border-bottom-width: 2px; }
     .tab-link.active { border-bottom-color: var(--primary-color); }
 }
+
+/* --- ESTILOS PARA AS PÁGINAS DO BLOG --- */
+
+/* Introdução da página do blog */
+.page-intro.blog-intro {
+    max-width: 800px;
+}
+
+/* Lista de artigos na página blog.html */
+.blog-articles-list {
+    display: grid;
+    /* Usa um layout que se adapta, com no mínimo 320px de largura por card */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.blog-card {
+    background: var(--white-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden; /* Garante que a imagem com cantos arredondados não vaze */
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.blog-card-image-link img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover; /* Garante que a imagem cubra o espaço sem distorcer */
+    display: block; /* Remove espaços extras abaixo da imagem */
+    border-bottom: 1px solid #eee;
+}
+
+.blog-card-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Faz este container crescer para preencher o espaço vertical */
+}
+
+.blog-card-content h3 {
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.3rem;
+}
+
+.blog-card-content h3 a {
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+.article-meta {
+    font-size: 0.9rem;
+    color: var(--medium-gray);
+    margin-bottom: 1rem;
+}
+
+.blog-card-content p {
+    color: var(--dark-gray);
+    flex-grow: 1; /* Empurra o botão "Leia Mais" para o final do card */
+    margin-bottom: 1rem;
+}
+
+.read-more {
+    color: var(--primary-color);
+    font-weight: 700;
+    text-decoration: none;
+    align-self: flex-start; /* Alinha o botão à esquerda */
+    margin-top: 1rem;
+    transition: color 0.2s;
+}
+
+.read-more:hover {
+    color: var(--dark-gray);
+}
+
+
+/* Estilos para a página de artigo individual (artigo.html) */
+.article-container {
+    max-width: 800px; /* Largura ideal para leitura de textos longos */
+}
+
+.article-header {
+    margin-bottom: 2rem;
+    text-align: center; /* Centraliza o cabeçalho do artigo */
+}
+
+.article-cover-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.article-header h1 {
+    font-size: 2.5rem;
+}
+
+.article-body {
+    font-size: 1.1rem;
+    line-height: 1.8; /* Aumenta o espaçamento entre linhas para melhor legibilidade */
+}
+
+.article-body h1, 
+.article-body h2, 
+.article-body h3 {
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.article-body p {
+    margin-bottom: 1.5rem;
+}
+
+.article-body a {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.article-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
