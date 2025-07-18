@@ -1,80 +1,120 @@
 # api/indicadores.py
-# VERSÃO DE DEPURACAO: Imprime os dados brutos recebidos para análise.
+# VERSÃO 2.0: Usa fontes diretas (Banco Central e yfinance) para máxima precisão.
 
 from flask import Flask, jsonify
 import httpx
 import asyncio
-import os
-import json # Importamos json para formatar a saída
+import yfinance as yf
+import pandas as pd
+from datetime import datetime, timedelta
+import pytz # Para lidar com fusos horários corretamente
 
 app = Flask(__name__)
 
-BRAPI_BASE_URL = "https://brapi.dev/api"
-BRAPI_TOKEN = os.environ.get('BRAPI_API_KEY')
+# --- Funções para buscar dados do Banco Central (SGS) ---
+BCB_API_URL = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.{codigo}/dados?formato=json"
 
-async def fetch_brapi_data(client, endpoint, extra_params=None):
+async def fetch_bcb_series(client, codigo, dias=380):
+    """Busca uma série temporal do Banco Central."""
     try:
-        params = {'token': BRAPI_TOKEN}
-        if extra_params:
-            params.update(extra_params)
-        
-        response = await client.get(f"{BRAPI_BASE_URL}/{endpoint}", params=params)
+        url = BCB_API_URL.format(codigo=codigo) + f"&dataInicial={ (datetime.now() - timedelta(days=dias)).strftime('%d/%m/%Y') }"
+        response = await client.get(url)
         response.raise_for_status()
         return response.json()
-    except httpx.HTTPStatusError as e:
-        print(f"Erro ao buscar {endpoint}: {e}")
-        return {"erro": f"HTTP {e.response.status_code}", "response": e.response.text}
     except Exception as e:
-        print(f"Um erro inesperado ocorreu em fetch_brapi_data: {e}")
+        print(f"Erro ao buscar série {codigo} do BCB: {e}")
+        return []
+
+# --- Função para buscar dados de Mercado com yfinance ---
+def fetch_market_data():
+    """Busca dados de múltiplos tickers usando yfinance."""
+    try:
+        tickers = yf.Tickers('^BVSP BRL=X ^GSPC ^IXIC')
+        # Usamos period='1y' para ter dados para calcular variação de 12 meses
+        hist = tickers.history(period='1y', auto_adjust=True)
+        
+        data = {}
+        for ticker in tickers.tickers:
+            last_price = hist['Close'][ticker].iloc[-1]
+            prev_price = hist['Close'][ticker].iloc[-2]
+            ytd_price = hist['Close'][ticker].loc[hist.index.year == datetime.now().year].iloc[0]
+
+            data[ticker] = {
+                'pontos': last_price,
+                'variacao_dia': ((last_price / prev_price) - 1) * 100,
+                'variacao_ano': ((last_price / ytd_price) - 1) * 100,
+                'variacao_12m': ((last_price / hist['Close'][ticker].iloc[0]) - 1) * 100,
+            }
+        return data
+    except Exception as e:
+        print(f"Erro ao buscar dados do yfinance: {e}")
         return None
 
+# --- Rota Principal da API ---
 @app.route('/api/indicadores', methods=['GET'])
 def get_all_indicators():
-    if not BRAPI_TOKEN:
-        return jsonify({"erro": "A chave da API da Brapi (BRAPI_API_KEY) não foi configurada no servidor."}), 500
-
+    
     async def main():
+        # Tarefa 1: Rodar o yfinance (síncrono) em uma thread separada
+        market_task = asyncio.to_thread(fetch_market_data)
+
+        # Tarefa 2: Buscar dados do BCB (assíncrono)
         async with httpx.AsyncClient() as client:
-            tasks = {
-                "inflacao": fetch_brapi_data(client, "inflation"),
-                "dolar": fetch_brapi_data(client, "v2/currency", extra_params={'currency': 'USD-BRL'}),
-                "ibov": fetch_brapi_data(client, "quote/ibovespa", extra_params={'range': '1y'})
+            # Códigos SGS: 433=IPCA, 189=IGP-M, 432=Selic Meta
+            bcb_tasks = {
+                "ipca": fetch_bcb_series(client, 433),
+                "igpm": fetch_bcb_series(client, 189),
+                "selic": fetch_bcb_series(client, 432),
             }
-            results = await asyncio.gather(*tasks.values())
-            results_dict = dict(zip(tasks.keys(), results))
-
-            # --- MUDANÇA PRINCIPAL: IMPRIMINDO OS DADOS BRUTOS NO LOG ---
-            print("--- DADOS BRUTOS RECEBIDOS DA BRAPI ---")
-            # Usamos json.dumps para formatar o print e torná-lo legível
-            print(json.dumps(results_dict, indent=2, ensure_ascii=False))
-            print("-----------------------------------------")
+            # Executa as tarefas do BCB e a tarefa do yfinance ao mesmo tempo
+            results = await asyncio.gather(market_task, *bcb_tasks.values())
             
-            # O resto do código continua para que a página não dê erro 500
-            final_data = {}
-            
-            inflacao_data = results_dict.get("inflacao", {}).get("inflation", []) if results_dict.get("inflacao") else []
-            ipca = next((item for item in inflacao_data if item.get("name") == "IPCA"), {})
-            igpm = next((item for item in inflacao_data if item.get("name") == "IGP-M"), {})
-            selic = next((item for item in inflacao_data if item.get("name") == "Taxa Selic"), {})
-            
-            final_data["ipca"] = {"doze_meses": ipca.get("twelveMonths"), "ano": ipca.get("year")}
-            final_data["igpm"] = {"doze_meses": igpm.get("twelveMonths"), "ano": igpm.get("year")}
-            final_data["selic"] = {"doze_meses": selic.get("twelveMonths"), "ano": selic.get("year")}
+            market_data = results[0]
+            bcb_results = dict(zip(bcb_tasks.keys(), results[1:]))
 
-            dolar_data = results_dict.get("dolar", {}).get("currency", [{}])[0] if results_dict.get("dolar") else {}
-            final_data["dolar"] = {"cotacao": dolar_data.get("askPrice"), "variacao_dia": dolar_data.get("changePercent")}
+        # --- Processamento dos Dados ---
+        final_data = {}
+        
+        # Processa dados do BCB
+        br_tz = pytz.timezone('America/Sao_Paulo')
+        start_of_year = datetime.now(br_tz).replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
-            ibov_data = results_dict.get("ibov", {}).get("results", [{}])[0] if results_dict.get("ibov") else {}
-            final_data["ibovespa"] = {
-                "pontos": ibov_data.get("regularMarketPrice"),
-                "variacao_dia": ibov_data.get("regularMarketChangePercent"),
-                "variacao_ano": ibov_data.get("fiftyTwoWeekHighChangePercent"),
-                "variacao_12m": ibov_data.get("fiftyTwoWeekHighChangePercent")
+        for name, series_data in bcb_results.items():
+            if series_data:
+                df = pd.DataFrame(series_data)
+                df['valor'] = pd.to_numeric(df['valor'])
+                df['data'] = pd.to_datetime(df['data'], format='%d/%m/%Y')
+                
+                # Acumulado 12 meses (soma dos últimos 12 valores mensais)
+                twelve_months = df.tail(12)['valor'].sum()
+                
+                # Acumulado no ano
+                ytd_df = df[df['data'] >= start_of_year]
+                year_to_date = ytd_df['valor'].sum() if not ytd_df.empty else 0
+                
+                final_data[name] = {"doze_meses": twelve_months, "ano": year_to_date}
+
+        # Processa dados de Mercado do yfinance
+        def process_ticker_data(ticker_symbol):
+            data = market_data.get(ticker_symbol, {})
+            return {
+                "pontos": data.get('pontos'),
+                "variacao_dia": data.get('variacao_dia'),
+                "variacao_ano": data.get('variacao_ano'),
+                "variacao_12m": data.get('variacao_12m')
             }
-            final_data["dolar"]["min_max_12m"] = f"{ibov_data.get('fiftyTwoWeekLow', 'N/A')} / {ibov_data.get('fiftyTwoWeekHigh', 'N/A')}"
+        
+        final_data['ibovespa'] = process_ticker_data('^BVSP')
+        # Dólar tem um nome diferente para "pontos"
+        dolar_data = process_ticker_data('BRL=X')
+        dolar_data['cotacao'] = dolar_data.pop('pontos', None)
+        final_data['dolar'] = dolar_data
 
-            response = jsonify(final_data)
-            response.headers['Cache-Control'] = 'public, s-maxage=3600'
-            return response
+        final_data['sp500'] = process_ticker_data('^GSPC')
+        final_data['nasdaq'] = process_ticker_data('^IXIC')
+
+        response = jsonify(final_data)
+        response.headers['Cache-Control'] = 'public, s-maxage=3600' # Cache de 1 hora
+        return response
 
     return asyncio.run(main())
