@@ -1,0 +1,6 @@
+# api/aposentadoria/requirements.txt
+Flask
+google-generativeai
+numpy
+numpy-financial
+gunicorn
