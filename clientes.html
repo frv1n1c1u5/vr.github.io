@@ -51,6 +51,7 @@
                     <div id="tab-aposentadoria" class="tab-pane active">
                         <h2>Simulador de Cenários de Aposentadoria</h2>
                         <p class="page-intro">Preencha os campos abaixo para rodar uma simulação de Monte Carlo e entender as probabilidades e cenários para o seu futuro financeiro.</p>
+                        
                         <div class="calculator-container">
                                 <form id="retirement-form">
                                     <div class="form-grid">
@@ -65,40 +66,42 @@
                                     </div>
                                     <button type="submit" class="btn btn-primary">Analisar Cenários</button>
                                 </form>
+                                
+                                <div id="view-selector" class="view-selector-container hidden">
+                                    <button id="view-real-btn" class="view-selector-btn active">Ver Valores Reais (poder de compra)</button>
+                                    <button id="view-nominal-btn" class="view-selector-btn">Ver Valores Nominais (bruto)</button>
+                                </div>
+                                
                                 <div id="report-container">
                                     <div id="retirement-results" class="hidden">
                                         </div>
                                     <div id="suggestion-card" class="hidden">
-                                        <h4>Sugestões de Custo de Vida (Pós-Aposentadoria)</h4>
+                                        <h4>Sugestão de Custo de Vida (Pós-Aposentadoria)</h4>
                                         <p>Valores mensais sugeridos (em dinheiro de hoje) com base no seu cenário mediano:</p>
                                         <div class="suggestion-grid">
                                             <div class="suggestion-item"><h5>Para PRESERVAR o Patrimônio</h5><span>(Retirada segura para viver dos juros e manter o principal)</span><strong id="sugestao-preservacao" class="result-value"></strong></div>
-                                            <div class="suggestion-item"><h5>Para USAR o Patrimônio</h5><span>(Retirada máxima sustentável para o patrimônio durar até o fim da vida)</span><strong id="sugestao-maxima" class="result-value"></strong></div>
-                                        </div>
+                                            </div>
                                     </div>
                                 </div>
-                                <button id="download-pdf" class="btn hidden" style="width: 100%; margin-top: 2rem;">Exportar Relatório em PDF</button>
                         </div>
                     </div>
 
                     <div id="tab-comparador" class="tab-pane">
-                        <h2>Financiamento vs. Aluguel vs. Consórcio</h2>
+                        <h2>Financiamento vs. Aluguel</h2>
                         <p class="page-intro">Descubra qual caminho faz mais sentido para seus objetivos, analisando a evolução do seu patrimônio em cada cenário.</p>
                         <div class="calculator-container">
-                             </div>
+                            </div>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="sticky-header">
-       <div class="container">
-            <p>&copy; 2025 Vinicius Rocha | Todos os direitos reservados.</p>
-        </div>
+    <footer class="main-footer"> <div class="container">
+           <p>&copy; 2025 Vinicius Rocha | Todos os direitos reservados.</p>
+       </div>
     </footer>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>
