@@ -1,7 +1,0 @@
-# api/indicadores/requirements.txt
-Flask
-httpx
-yfinance
-pandas
-pytz
-gunicorn
