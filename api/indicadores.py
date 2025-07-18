@@ -1,10 +1,11 @@
 # api/indicadores.py
-# VERSÃO FINAL: Código mais limpo e robusto.
+# VERSÃO DE DEPURACAO: Imprime os dados brutos recebidos para análise.
 
 from flask import Flask, jsonify
 import httpx
 import asyncio
 import os
+import json # Importamos json para formatar a saída
 
 app = Flask(__name__)
 
@@ -12,9 +13,7 @@ BRAPI_BASE_URL = "https://brapi.dev/api"
 BRAPI_TOKEN = os.environ.get('BRAPI_API_KEY')
 
 async def fetch_brapi_data(client, endpoint, extra_params=None):
-    """Função genérica para buscar dados na Brapi API, agora com o token."""
     try:
-        # Prepara os parâmetros da URL
         params = {'token': BRAPI_TOKEN}
         if extra_params:
             params.update(extra_params)
@@ -24,8 +23,7 @@ async def fetch_brapi_data(client, endpoint, extra_params=None):
         return response.json()
     except httpx.HTTPStatusError as e:
         print(f"Erro ao buscar {endpoint}: {e}")
-        print(f"Response body: {e.response.text}")
-        return None
+        return {"erro": f"HTTP {e.response.status_code}", "response": e.response.text}
     except Exception as e:
         print(f"Um erro inesperado ocorreu em fetch_brapi_data: {e}")
         return None
@@ -45,6 +43,13 @@ def get_all_indicators():
             results = await asyncio.gather(*tasks.values())
             results_dict = dict(zip(tasks.keys(), results))
 
+            # --- MUDANÇA PRINCIPAL: IMPRIMINDO OS DADOS BRUTOS NO LOG ---
+            print("--- DADOS BRUTOS RECEBIDOS DA BRAPI ---")
+            # Usamos json.dumps para formatar o print e torná-lo legível
+            print(json.dumps(results_dict, indent=2, ensure_ascii=False))
+            print("-----------------------------------------")
+            
+            # O resto do código continua para que a página não dê erro 500
             final_data = {}
             
             inflacao_data = results_dict.get("inflacao", {}).get("inflation", []) if results_dict.get("inflacao") else []
