@@ -1,11 +1,14 @@
-# requirements.txt (Versão Final e Recomendada)
+# requirements.txt (Versão Final V2 com yfinance)
 
-# Pacotes para o simulador de aposentadoria (com suas versões)
+# Pacotes para o simulador de aposentadoria
 Flask==3.0.0
 google-generativeai==0.7.2
 numpy==1.26.4
 numpy-financial==1.0.0
 
-# Pacotes novos para a página de indicadores
+# Pacotes para a página de indicadores
 httpx
 gunicorn
+yfinance
+pandas
+pytz
