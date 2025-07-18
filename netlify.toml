@@ -1,8 +1,9 @@
+# netlify.toml
 [build]
   publish = "."
   functions = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  to = "/.netlify/functions/api"  # <-- Aponta para o novo maestro
   status = 200
