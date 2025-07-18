@@ -1,0 +1,9 @@
+{
+  "builds": [
+    {
+      "src": "api/**/*.py",
+      "use": "@vercel/python",
+      "config": { "pythonVersion": "3.9" }
+    }
+  ]
+}
