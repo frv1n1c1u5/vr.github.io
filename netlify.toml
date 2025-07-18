@@ -1,7 +1,4 @@
-# netlify.toml (Versão com comando de build explícito)
-
 [build]
-  # ESTA É A NOVA LINHA:
   command = "pip install -r netlify/functions/requirements.txt"
   publish = "."
   functions = "netlify/functions"
