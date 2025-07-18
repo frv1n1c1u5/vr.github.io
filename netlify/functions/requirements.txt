@@ -1,14 +1,12 @@
-# netlify/functions/requirements.txt
-
 # Pacotes para o simulador de aposentadoria
 Flask
 google-generativeai
 numpy
 numpy-financial
-gunicorn
 
 # Pacotes para a página de indicadores
 httpx
 yfinance
 pandas
 pytz
+gunicorn
