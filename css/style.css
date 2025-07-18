@@ -1,4 +1,4 @@
-/* /css/style.css - Versão Final, Completa e Verificada */
+/* /css/style.css - CÓDIGO COMPLETO E ATUALIZADO */
 
 /* --- Variáveis e Configurações Globais --- */
 :root {
@@ -62,7 +62,7 @@ p { margin-bottom: 1rem; }
 .form-group { display: flex; flex-direction: column; }
 .form-group label { margin-bottom: 0.5rem; font-weight: 700; color: var(--dark-gray); }
 .form-group input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
-#result-section, #comparison-results { margin-top: 2rem; }
+#result-section { margin-top: 2rem; }
 .chart-container { position: relative; margin: 2rem auto; height: 400px; max-width: 800px; }
 .scenarios-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
 .scenario-card { background: #fff; padding: 1.5rem; text-align: center; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom: 4px solid var(--primary-color); }
@@ -71,14 +71,14 @@ p { margin-bottom: 1rem; }
 #suggestion-card { margin-top: 2rem; padding: 2rem; background: #fff; border: 2px dashed var(--primary-color); border-radius: 8px; text-align: center; }
 #suggestion-card > p { max-width: 100%; margin-bottom: 1.5rem; }
 #suggestion-card strong { font-size: 2rem; color: var(--primary-color); display: block; }
-.suggestion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem; align-items: start; }
+.suggestion-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 1rem; align-items: start; } /* Alterado para 1fr */
 .suggestion-item span { font-size: 0.8rem; color: var(--medium-gray); min-height: 40px; display: block; }
 .result-value { color: var(--dark-gray); }
 .result-value.positive { color: var(--positive-color); }
 .result-value.negative { color: var(--negative-color); }
 
 /* --- Rodapé --- */
-footer { background-color: var(--dark-gray); color: var(--light-gray); text-align: center; padding: 1.5rem 0; margin-top: 4rem; }
+.main-footer { background-color: var(--dark-gray); color: var(--light-gray); text-align: center; padding: 1.5rem 0; margin-top: 4rem; }
 
 /* --- Responsividade --- */
 @media (max-width: 768px) {
@@ -90,4 +90,37 @@ footer { background-color: var(--dark-gray); color: var(--light-gray); text-alig
     .tool-tabs { flex-direction: column; }
     .tab-link { margin-bottom: 0; border-bottom-width: 2px; }
     .tab-link.active { border-bottom-color: var(--primary-color); }
+}
+
+/* --- NOVOS ESTILOS PARA O SELETOR NOMINAL/REAL --- */
+.view-selector-container {
+    display: flex;
+    justify-content: center;
+    margin: 2rem auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    width: fit-content;
+}
+
+.view-selector-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: var(--header-font);
+    border: none;
+    background-color: var(--light-gray);
+    color: var(--medium-gray);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.view-selector-btn.active {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    box-shadow: 0 0 10px rgba(10, 66, 117, 0.3);
+}
+
+.view-selector-btn:not(.active):hover {
+    background-color: #e2e6ea;
 }
